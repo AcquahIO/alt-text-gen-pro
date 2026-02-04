@@ -244,7 +244,10 @@ function renderAltTextModal(initialText, srcUrl, isError) {
     regenBtn.onclick = async () => {
       regenBtn.disabled = true;
       regenBtn.textContent = 'Regenerating…';
-      const context = await new Promise((resolve) => { chrome.runtime.sendMessage({ type: 'collectContext' }, resolve); }).catch(() => ({}));
+      let context = {};
+      try {
+        context = buildDomContext(findImageBySrc(srcUrl), srcUrl);
+      } catch {}
       chrome.runtime.sendMessage({ type: 'regenerateAltText', srcUrl, context }, (res) => {
         regenBtn.disabled = false;
         regenBtn.textContent = chrome.i18n.getMessage('btn_regen') || 'Regenerate';

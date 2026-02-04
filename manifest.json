@@ -1,32 +1,23 @@
 {
   "manifest_version": 3,
-  "name": "Alt Text Generator Pro",
-  "version": "0.1.0",
-  "description": "Generate high-quality alt text for images via context menu or uploads.",
+  "name": "__MSG_ext_name__",
+  "version": "0.1.1",
+  "description": "__MSG_ext_desc__",
   "default_locale": "en",
-  "permissions": ["contextMenus", "storage", "identity", "alarms"],
-  "host_permissions": [
-    "http://localhost:8787/*",
-    "https://alt-text-gen-pro-backend.herokuapp.com/*"
-  ],
+  "permissions": ["contextMenus", "storage", "identity", "scripting"],
+  "host_permissions": ["http://*/*", "https://*/*"],
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
   "action": {
-    "default_title": "Alt Text Generator",
+    "default_title": "__MSG_ext_name__",
     "default_popup": "ui-dist/popup.html",
     "default_icon": {
       "16": "icons/action-icon-16.png",
       "32": "icons/action-icon-32.png"
     }
   },
-  "web_accessible_resources": [
-    {
-      "resources": ["ui-dist/*"],
-      "matches": ["<all_urls>"]
-    }
-  ],
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
@@ -39,7 +30,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["http://*/*", "https://*/*"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
