@@ -1,0 +1,66 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteCond %{HTTP:Cookie} (^|;\s*)lang_pref=en-US(;|$) [NC]
+  RewriteRule ^$ /en-US/ [R=302,L]
+
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteCond %{HTTP:Cookie} (^|;\s*)lang_pref=es-ES(;|$) [NC]
+  RewriteRule ^$ /es-ES/ [R=302,L]
+
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteCond %{HTTP:Cookie} (^|;\s*)lang_pref=fr-FR(;|$) [NC]
+  RewriteRule ^$ /fr-FR/ [R=302,L]
+
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteCond %{HTTP:Cookie} (^|;\s*)lang_pref=de-DE(;|$) [NC]
+  RewriteRule ^$ /de-DE/ [R=302,L]
+
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteCond %{HTTP:Cookie} (^|;\s*)lang_pref=ar(;|$) [NC]
+  RewriteRule ^$ /ar/ [R=302,L]
+
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteCond %{HTTP:Cookie} (^|;\s*)lang_pref=zh-Hans(;|$) [NC]
+  RewriteRule ^$ /zh-Hans/ [R=302,L]
+
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteCond %{HTTP:Cookie} (^|;\s*)lang_pref=en-GB(;|$) [NC]
+  RewriteRule ^$ /en-GB/ [R=302,L]
+
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteCond %{HTTP:Accept-Language} (^|,)\s*en-US [NC]
+  RewriteRule ^$ /en-US/ [R=302,L]
+
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteCond %{HTTP:Accept-Language} (^|,)\s*es(?:-ES)? [NC]
+  RewriteRule ^$ /es-ES/ [R=302,L]
+
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteCond %{HTTP:Accept-Language} (^|,)\s*fr(?:-FR)? [NC]
+  RewriteRule ^$ /fr-FR/ [R=302,L]
+
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteCond %{HTTP:Accept-Language} (^|,)\s*de(?:-DE)? [NC]
+  RewriteRule ^$ /de-DE/ [R=302,L]
+
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteCond %{HTTP:Accept-Language} (^|,)\s*ar(?:-[A-Z]{2})? [NC]
+  RewriteRule ^$ /ar/ [R=302,L]
+
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteCond %{HTTP:Accept-Language} (^|,)\s*zh(?:-Hans|-CN|-SG)? [NC]
+  RewriteRule ^$ /zh-Hans/ [R=302,L]
+
+  RewriteCond %{REQUEST_URI} ^/?$
+  RewriteRule ^$ /en-GB/ [R=302,L]
+
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  RewriteRule ^ index.html [L]
+</IfModule>

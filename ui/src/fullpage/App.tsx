@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { UploadHeader } from '@/components/UploadHeader';
 import { ImageResultCard } from '@/components/ImageResultCard';
-import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
 import {
   consumePendingUploads,
@@ -17,7 +16,6 @@ import {
 import { entriesToItems, filesToUploadItems } from '@/lib/uploads';
 import { UploadItem } from '@/lib/types';
 import { toast } from 'sonner';
-import { Wand2 } from 'lucide-react';
 
 export default function FullPageApp() {
   const [items, setItems] = useState<UploadItem[]>([]);
@@ -127,20 +125,59 @@ export default function FullPageApp() {
   }, []);
 
   const renderedItems = useMemo(() => items, [items]);
-  const iconSrc = useMemo(() => getRuntimeUrl('icons/icon32.png'), []);
+  const iconSrc = useMemo(() => getRuntimeUrl('icons/icon-32.png'), []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b bg-card/40 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-6 lg:px-10 py-4">
-          <div className="flex items-center gap-2">
-            <img src={iconSrc} alt="Alt Text Generator" className="w-7 h-7 rounded-lg" />
-            <h1 className="text-lg font-semibold">Alt Text Generator</h1>
+    <div className="min-h-screen text-foreground" style={{ background: '#f8fbff' }}>
+      <header className="border-b" style={{ borderColor: '#dbeafe', background: '#ffffff' }}>
+        <div
+          style={{
+            maxWidth: 1080,
+            marginInline: 'auto',
+            padding: '16px 24px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <img src={iconSrc} alt="Alt Text Generator" className="w-7 h-7 rounded-lg" />
+              <h1 className="text-lg font-semibold" style={{ letterSpacing: '-0.01em', color: '#0b1b44' }}>
+                Alt Text Generator
+              </h1>
+            </div>
+            <span
+              className="text-sm text-muted-foreground"
+              style={{
+                border: '1px solid #dbeafe',
+                borderRadius: 999,
+                padding: '6px 12px',
+                background: '#eff6ff',
+                color: '#1e3a8a',
+              }}
+            >
+              {items.length} image{items.length === 1 ? '' : 's'} queued
+            </span>
           </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 lg:px-10 py-10 space-y-8">
+      <main
+        style={{
+          maxWidth: 1080,
+          marginInline: 'auto',
+          padding: '24px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 20,
+        }}
+      >
         <UploadHeader
           language={language}
           onLanguageChange={handleLanguageChange}
@@ -153,7 +190,7 @@ export default function FullPageApp() {
         />
 
         {renderedItems.length > 0 ? (
-          <div className="space-y-6">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {renderedItems.map((item) => (
               <ImageResultCard
                 key={item.id}
@@ -166,21 +203,13 @@ export default function FullPageApp() {
             ))}
           </div>
         ) : (
-          <div className="border border-dashed rounded-xl p-12 text-center text-muted-foreground">
+          <div
+            className="border border-dashed rounded-xl text-center text-muted-foreground"
+            style={{ padding: '42px 24px', borderColor: '#dbeafe', background: '#ffffff' }}
+          >
             <p>No images queued yet. Use the uploader above or the extension popup to start.</p>
           </div>
         )}
-
-        <div className="flex justify-center pt-2">
-          <Button
-            className="w-full max-w-sm bg-green-600 hover:bg-green-700 text-white sm:w-auto"
-            onClick={handleGenerateAll}
-            disabled={generatingAll || items.length === 0}
-          >
-            <Wand2 className={`w-4 h-4 ${generatingAll ? 'animate-pulse' : ''}`} />
-            <span>{generatingAll ? 'Generating…' : 'Generate All'}</span>
-          </Button>
-        </div>
       </main>
       <Toaster richColors position="top-center" />
     </div>

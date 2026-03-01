@@ -3,14 +3,42 @@ import { getAppBaseUrl } from './env';
 import { getLocal, removeLocal, setLocal } from './extension';
 
 export type Plan = 'free' | 'trial' | 'paid';
+export type ClientScope = 'web' | 'chrome' | 'shopify' | 'wordpress';
+export type PlanCode =
+  | 'plan_web'
+  | 'plan_chrome'
+  | 'plan_shopify'
+  | 'plan_wordpress'
+  | 'plan_all_access';
+
+export interface EntitlementMatrix {
+  all: boolean;
+  web: boolean;
+  chrome: boolean;
+  shopify: boolean;
+  wordpress: boolean;
+}
+
+export interface BillingCatalogEntry {
+  planCode: PlanCode;
+  title: string;
+  scope: ClientScope | 'all';
+  unlockedScopes: Array<ClientScope | 'all'>;
+  purchaseEnabled: boolean;
+  current: boolean;
+}
 
 export interface SubscriptionStatus {
   plan: Plan;
+  activePlanCode?: PlanCode | null;
+  currentSubscriptionStatus?: string | null;
   trialEndsAt?: string | null;
   renewsAt?: string | null;
   providerPortalUrl?: string | null;
   hasStripeCustomer?: boolean;
   trialEligible?: boolean;
+  entitlements?: Partial<EntitlementMatrix>;
+  catalog?: BillingCatalogEntry[];
 }
 
 export interface AuthState {

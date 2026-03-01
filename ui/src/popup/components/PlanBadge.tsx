@@ -1,4 +1,5 @@
 import { Plan } from '@/lib/session';
+import { type CSSProperties } from 'react';
 
 interface PlanBadgeProps {
   plan: Plan;
@@ -15,16 +16,52 @@ function daysRemaining(trialEndsAt?: string | null): number | null {
 }
 
 export function PlanBadge({ plan, trialEndsAt }: PlanBadgeProps) {
-  const baseClasses = 'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium shadow-sm';
+  const baseStyle: CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: 999,
+    padding: '4px 12px',
+    fontSize: 12,
+    fontWeight: 600,
+    letterSpacing: '0.01em',
+    border: '1px solid transparent',
+    whiteSpace: 'nowrap',
+    lineHeight: 1.2,
+  };
+
+  const dotStyle = (color: string): CSSProperties => ({
+    width: 7,
+    height: 7,
+    borderRadius: 999,
+    background: color,
+    boxShadow: `0 0 0 2px ${color}20`,
+  });
+
   switch (plan) {
     case 'trial': {
       const days = daysRemaining(trialEndsAt);
       const label = days === null ? 'Trial' : `Trial · ${days} day${days === 1 ? '' : 's'} left`;
-      return <span className={`${baseClasses} bg-amber-100 text-amber-900`}>{label}</span>;
+      return (
+        <span style={{ ...baseStyle, background: '#fff7ed', color: '#9a3412', borderColor: '#fdba74' }}>
+          <span style={dotStyle('#f59e0b')} />
+          {label}
+        </span>
+      );
     }
     case 'paid':
-      return <span className={`${baseClasses} bg-emerald-100 text-emerald-900`}>Pro (Active)</span>;
+      return (
+        <span style={{ ...baseStyle, background: '#ecfdf3', color: '#166534', borderColor: '#86efac' }}>
+          <span style={dotStyle('#16a34a')} />
+          Pro · Active
+        </span>
+      );
     default:
-      return <span className={`${baseClasses} bg-slate-200 text-slate-700`}>Free</span>;
+      return (
+        <span style={{ ...baseStyle, background: '#eff6ff', color: '#1e3a8a', borderColor: '#bfdbfe' }}>
+          <span style={dotStyle('#64748b')} />
+          Free
+        </span>
+      );
   }
 }

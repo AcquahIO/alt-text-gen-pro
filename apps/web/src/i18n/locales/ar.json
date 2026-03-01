@@ -1,0 +1,215 @@
+{
+  "brand": {
+    "name": "Alt Text Generator Pro",
+    "shortName": "AT",
+    "tagline": "الويب وChrome وShopify وWordPress",
+    "sharedTagline": "حساب مشترك عبر الويب وChrome وShopify وWordPress",
+    "footer": "Alt Text Generator Pro · سير عمل لوصف الصور مع التركيز على إمكانية الوصول"
+  },
+  "common": {
+    "home": "الرئيسية",
+    "signIn": "تسجيل الدخول",
+    "signOut": "تسجيل الخروج",
+    "openApp": "فتح التطبيق",
+    "startGenerating": "ابدأ التوليد",
+    "launchWebApp": "تشغيل تطبيق الويب",
+    "explorePlatforms": "استكشاف المنصات",
+    "backToHome": "العودة إلى الرئيسية",
+    "returnToApp": "العودة إلى التطبيق",
+    "refreshStatus": "تحديث الحالة",
+    "manageSwitchPlan": "إدارة / تغيير الخطة",
+    "clear": "مسح",
+    "copy": "نسخ",
+    "generate": "توليد",
+    "generateAll": "توليد الكل",
+    "generating": "جارٍ التوليد…",
+    "chooseFiles": "اختيار الملفات",
+    "add": "إضافة",
+    "downloadMetadata": "تنزيل البيانات الوصفية",
+    "language": "اللغة",
+    "optionalContext": "سياق اختياري",
+    "comingSoon": "قريباً",
+    "current": "الحالية",
+    "bundle": "حزمة",
+    "singleProduct": "منتج منفرد",
+    "signInToChoose": "سجّل الدخول للاختيار",
+    "manageSwitch": "إدارة / تغيير",
+    "choosePlan": "اختر الخطة",
+    "startTrial": "ابدأ التجربة",
+    "copiedToClipboard": "تم النسخ إلى الحافظة."
+  },
+  "seo": {
+    "siteName": "Alt Text Generator Pro",
+    "landing": {
+      "title": "Alt Text Generator Pro | نصوص بديلة بالذكاء الاصطناعي للويب وChrome وShopify وWordPress",
+      "description": "أنشئ نصوصاً بديلة عالية الجودة للصور باستخدام حساب واحد مشترك عبر تطبيق الويب وChrome وShopify وWordPress."
+    },
+    "app": {
+      "title": "تطبيق Alt Text Generator Pro | إنشاء أوصاف صور يمكن الوصول إليها",
+      "description": "حمّل الصور وأنشئ النص البديل وأدر الاشتراكات والصلاحيات المشتركة من تطبيق Alt Text Generator Pro على الويب."
+    },
+    "authCallback": {
+      "title": "جارٍ تسجيل الدخول | Alt Text Generator Pro",
+      "description": "أكمل تسجيل الدخول إلى حساب Alt Text Generator Pro الخاص بك."
+    },
+    "billingSuccess": {
+      "title": "تم تحديث الفوترة | Alt Text Generator Pro",
+      "description": "عُد إلى التطبيق وراجع خطتك وصلاحياتك الأحدث في Alt Text Generator Pro."
+    },
+    "billingCancel": {
+      "title": "تم إلغاء الدفع | Alt Text Generator Pro",
+      "description": "لم يتم تطبيق أي تغييرات على الفوترة. يمكنك العودة إلى Alt Text Generator Pro في أي وقت."
+    }
+  },
+  "languageSwitcher": {
+    "label": "اللغة"
+  },
+  "landing": {
+    "nav": {
+      "openApp": "فتح التطبيق",
+      "startGenerating": "ابدأ التوليد"
+    },
+    "hero": {
+      "title": "حسّن إمكانية الوصول بنص بديل سريع وعالي الجودة.",
+      "body": "يساعد Alt Text Generator Pro الفرق على إنشاء نصوص بديلة دقيقة على نطاق واسع. استخدم تطبيق الويب لرفع الصور والتوليد عبر الروابط، ثم اربط الحساب نفسه عبر Chrome وShopify وWordPress.",
+      "launchWebApp": "تشغيل تطبيق الويب",
+      "explorePlatforms": "استكشاف المنصات",
+      "stagingNotice": "نسخة مرحلية: هذه البيئة مخصّصة للتحقق قبل الإطلاق."
+    },
+    "kpis": {
+      "channelsTitle": "3 قنوات",
+      "channelsBody": "الويب + الإضافة + تكاملات المنصات",
+      "accountTitle": "حساب مشترك",
+      "accountBody": "فوترة وصلاحيات موحّدة",
+      "batchTitle": "جاهز للمعالجة الدفعية",
+      "batchBody": "أنشئ نصوصاً بديلة لعدة أصول بسرعة",
+      "info": "الذكاء الخلفي نفسه يدعم تطبيق الويب والإضافة والتكاملات."
+    },
+    "features": {
+      "title": "مصمم للفرق التي تنشر المحتوى يومياً",
+      "subtitle": "حافظ على لغة بصرية متسقة، وطبّق الجودة، واعتمد على طبقة صلاحيات واحدة مرتبطة بالحساب.",
+      "contextTitle": "توليد مدعوم بالسياق",
+      "contextBody": "أضف سياقاً اختيارياً وإعدادات اللغة للحصول على أوصاف أنظف وأكثر صلة.",
+      "subscriptionsTitle": "اشتراكات موحّدة",
+      "subscriptionsBody": "استخدم حساباً واحداً عبر جميع المنتجات مع فوترة مركزية وصلاحيات حسب المنصة.",
+      "metadataTitle": "تنزيل مع بيانات وصفية",
+      "metadataBody": "أدرج الأوصاف التي تم إنشاؤها داخل الملفات المنزلة لتسهيل النشر."
+    },
+    "platforms": {
+      "title": "استخدم Alt Text Generator Pro أينما تعمل",
+      "subtitle": "ابدأ بتطبيق الويب ثم توسع إلى سير عمل خاص بكل قناة."
+    },
+    "pricing": {
+      "title": "أسعار تنمو مع سير عملك",
+      "subtitle": "ابدأ بوصول تجريبي، ثم قم بالترقية إلى خطط لكل قناة أو إلى الوصول الكامل من لوحة حسابك.",
+      "freeTitle": "مجاني",
+      "freePrice": "$0",
+      "freeBody": "سجّل الدخول وابدأ مع أهلية التجربة وفحوصات الصلاحيات.",
+      "singleTitle": "قناة واحدة",
+      "singlePrice": "ابتداءً من 10$",
+      "singleBody": "فعّل القناة التي تحتاجها الآن مع إمكانية التوسّع لاحقاً.",
+      "allTitle": "وصول كامل",
+      "allPrice": "حزمة",
+      "allBody": "اشتراك واحد لـ Chrome وShopify وWordPress واستخدام الويب.",
+      "choosePlan": "اختر الخطة",
+      "comparePlans": "قارن الخطط"
+    }
+  },
+  "channels": {
+    "live": "متاح",
+    "waitlist": "قائمة انتظار",
+    "chrome": {
+      "title": "إضافة Chrome",
+      "description": "توليد بالنقر الأيمن والتقاط صور الصفحة داخل المتصفح.",
+      "cta": "استخدمه على Chrome"
+    },
+    "shopify": {
+      "title": "تطبيق Shopify",
+      "description": "اربط المتاجر وأنشئ نصوصاً بديلة متسقة لسير عمل المنتجات.",
+      "cta": "انضم إلى قائمة Shopify"
+    },
+    "wordpress": {
+      "title": "إضافة WordPress",
+      "description": "أنشئ النص البديل وأدره من داخل سير عمل الوسائط في WordPress.",
+      "cta": "انضم إلى قائمة WordPress"
+    }
+  },
+  "app": {
+    "accountHub": "مركز الحساب",
+    "usageHistory": "الاستخدام والسجل",
+    "currentPlanPrefix": "الخطة الحالية:",
+    "unlockedProducts": "المنتجات المفعّلة",
+    "noEntitlements": "لا توجد صلاحيات منتجات حتى الآن.",
+    "signInSharedAccount": "سجّل الدخول بالحساب نفسه الذي تستخدمه في Chrome داخل Alt Text Generator Pro. حسابك وفوترتك وصلاحياتك مشتركة عبر جميع العملاء.",
+    "webEntitlementWarning": "تم تسجيل الدخول إلى حسابك، لكن صلاحياتك الحالية لا تشمل التوليد على الويب. اختر أدناه خطة تدعم الويب.",
+    "usageAfterSignIn": "تظهر عدادات الاستخدام بعد تسجيل الدخول.",
+    "recentResults": "النتائج الأخيرة",
+    "noRecentResults": "لا توجد عمليات توليد حديثة بعد.",
+    "plansTitle": "الخطط",
+    "plansSubtitle": "اشتر المنتج الذي تحتاجه الآن، أو استخدم الوصول الكامل لتفعيل جميع العملاء بحساب واحد.",
+    "planDescriptions": {
+      "plan_web": "رفع ملفات، وتوليد عبر الروابط، وتنزيل مع بيانات وصفية، وسجل حديث داخل تطبيق الويب.",
+      "plan_chrome": "توليد بالنقر الأيمن، وجمع صور الصفحة، وسير عمل الصفحة الكاملة في الإضافة.",
+      "plan_shopify": "سير عمل مرتبط بالمتجر وتوليد مدعوم بالصلاحيات لفرق Shopify.",
+      "plan_wordpress": "سير عمل للتوليد داخل WordPress باستخدام حساب مشترك.",
+      "plan_all_access": "اشتراك واحد يفعّل الويب وChrome وShopify وWordPress."
+    },
+    "planTitles": {
+      "plan_web": "الويب",
+      "plan_chrome": "إضافة Chrome",
+      "plan_shopify": "Shopify",
+      "plan_wordpress": "WordPress",
+      "plan_all_access": "الوصول الكامل"
+    },
+    "usage": {
+      "hour": "الساعة",
+      "day": "اليوم",
+      "month": "الشهر"
+    },
+    "unlocks": "يفعّل",
+    "generateTitle": "إنشاء النص البديل",
+    "imageUrlLabel": "إضافة صورة عبر الرابط",
+    "imageUrlPlaceholder": "https://example.com/image.jpg",
+    "contextPlaceholder": "سياق المشروع أو الصفحة أو التحرير لتحسين الأوصاف",
+    "noItems": "لا توجد صور في قائمة الانتظار بعد. ارفع ملفات أو أضف رابط صورة أعلاه.",
+    "noAltTextYet": "لم يتم إنشاء نص بديل بعد.",
+    "urlImage": "صورة عبر الرابط",
+    "metadataUploadOnly": "تنزيل البيانات الوصفية متاح حالياً فقط للملفات المرفوعة",
+    "metadataDownloadTitle": "تنزيل مع بيانات وصفية مضمّنة",
+    "signedIn": "تم تسجيل الدخول",
+    "free": "مجاني",
+    "paid": "خطة مدفوعة",
+    "trial": "تجربة",
+    "trialDaysLeft": "تجربة · {days} يوم/أيام متبقية",
+    "status": {
+      "queued": "في الانتظار",
+      "ready": "جاهز",
+      "failed": "فشل"
+    },
+    "messages": {
+      "invalidImageUrl": "يرجى إدخال رابط صورة صالح (http/https).",
+      "webPlanRequired": "خطتك الحالية لا تشمل التوليد على الويب. اختر أدناه خطة تدعم الويب.",
+      "billingUpdated": "تم تحديث الفوترة. تمت إعادة تحميل حالة حسابك.",
+      "billingCancelled": "تم إلغاء الدفع. لم تُطبَّق أي تغييرات على الفوترة.",
+      "downloadedMetadata": "تم التنزيل مع البيانات الوصفية.",
+      "chooseSubscription": "اختر أدناه خطة لبدء أول اشتراك لك.",
+      "currentPlan": "الخطة {title} هي خطتك الحالية بالفعل.",
+      "comingSoonPlan": "تظهر {title} في الكتالوج، لكنها غير متاحة حالياً للشراء الذاتي."
+    },
+    "disabled": {
+      "loading": "جارٍ تحميل الجلسة…",
+      "signedOut": "سجّل الدخول لبدء إنشاء النص البديل.",
+      "missingEntitlement": "صلاحيتك الحالية لا تشمل التوليد على الويب."
+    }
+  },
+  "auth": {
+    "title": "جارٍ تسجيل الدخول…",
+    "body": "جارٍ إكمال مصادقة الحساب."
+  },
+  "billing": {
+    "successTitle": "جارٍ تحديث حسابك…",
+    "successBody": "العودة إلى التطبيق وإعادة تحميل آخر خطة وصلاحيات لك.",
+    "cancelTitle": "العودة إلى التطبيق…",
+    "cancelBody": "لم يتم تطبيق أي تغييرات على الفوترة."
+  }
+}

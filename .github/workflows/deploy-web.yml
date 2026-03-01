@@ -1,0 +1,100 @@
+name: Deploy Web App
+
+on:
+  push:
+    branches:
+      - staging
+      - main
+
+concurrency:
+  group: deploy-web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy_staging:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build web app (staging)
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_APP_ORIGIN: ${{ secrets.VITE_APP_ORIGIN }}
+          VITE_CHROME_LINK: ${{ secrets.VITE_CHROME_LINK }}
+          VITE_SHOPIFY_LINK: ${{ secrets.VITE_SHOPIFY_LINK }}
+          VITE_WORDPRESS_LINK: ${{ secrets.VITE_WORDPRESS_LINK }}
+          VITE_STAGING: 'true'
+        run: npm run build
+
+      - name: Install lftp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
+
+      - name: Deploy via SFTP (staging)
+        env:
+          SG_HOST: ${{ secrets.SG_HOST }}
+          SG_PORT: ${{ secrets.SG_PORT }}
+          SG_USER: ${{ secrets.SG_USER }}
+          SG_PASSWORD: ${{ secrets.SG_PASSWORD }}
+          SG_REMOTE_PATH: ${{ secrets.SG_REMOTE_PATH }}
+        run: |
+          lftp -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; open -u ${SG_USER},${SG_PASSWORD} ftp://${SG_HOST}:${SG_PORT}; mirror -R --delete --verbose dist ${SG_REMOTE_PATH}; bye"
+
+  deploy_production:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build web app (production)
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_APP_ORIGIN: ${{ secrets.VITE_APP_ORIGIN }}
+          VITE_CHROME_LINK: ${{ secrets.VITE_CHROME_LINK }}
+          VITE_SHOPIFY_LINK: ${{ secrets.VITE_SHOPIFY_LINK }}
+          VITE_WORDPRESS_LINK: ${{ secrets.VITE_WORDPRESS_LINK }}
+          VITE_STAGING: 'false'
+        run: npm run build
+
+      - name: Install lftp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
+
+      - name: Deploy via SFTP (production)
+        env:
+          SG_HOST: ${{ secrets.SG_HOST }}
+          SG_PORT: ${{ secrets.SG_PORT }}
+          SG_USER: ${{ secrets.SG_USER }}
+          SG_PASSWORD: ${{ secrets.SG_PASSWORD }}
+          SG_REMOTE_PATH: ${{ secrets.SG_REMOTE_PATH }}
+        run: |
+          lftp -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; open -u ${SG_USER},${SG_PASSWORD} ftp://${SG_HOST}:${SG_PORT}; mirror -R --delete --verbose dist ${SG_REMOTE_PATH}; bye"

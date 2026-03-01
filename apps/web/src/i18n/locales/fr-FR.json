@@ -1,0 +1,215 @@
+{
+  "brand": {
+    "name": "Alt Text Generator Pro",
+    "shortName": "AT",
+    "tagline": "Web, Chrome, Shopify, WordPress",
+    "sharedTagline": "Compte partagé entre le web, Chrome, Shopify et WordPress",
+    "footer": "Alt Text Generator Pro · Flux de descriptions d’images axés sur l’accessibilité"
+  },
+  "common": {
+    "home": "Accueil",
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
+    "openApp": "Ouvrir l’app",
+    "startGenerating": "Commencer à générer",
+    "launchWebApp": "Lancer l’app web",
+    "explorePlatforms": "Découvrir les plateformes",
+    "backToHome": "Retour à l’accueil",
+    "returnToApp": "Retour à l’app",
+    "refreshStatus": "Actualiser le statut",
+    "manageSwitchPlan": "Gérer / changer d’offre",
+    "clear": "Effacer",
+    "copy": "Copier",
+    "generate": "Générer",
+    "generateAll": "Tout générer",
+    "generating": "Génération…",
+    "chooseFiles": "Choisir des fichiers",
+    "add": "Ajouter",
+    "downloadMetadata": "Télécharger les métadonnées",
+    "language": "Langue",
+    "optionalContext": "Contexte facultatif",
+    "comingSoon": "Bientôt disponible",
+    "current": "Actuel",
+    "bundle": "Pack",
+    "singleProduct": "Produit unique",
+    "signInToChoose": "Connectez-vous pour choisir",
+    "manageSwitch": "Gérer / changer",
+    "choosePlan": "Choisir l’offre",
+    "startTrial": "Commencer l’essai",
+    "copiedToClipboard": "Copié dans le presse-papiers."
+  },
+  "seo": {
+    "siteName": "Alt Text Generator Pro",
+    "landing": {
+      "title": "Alt Text Generator Pro | Texte alternatif IA pour le web, Chrome, Shopify et WordPress",
+      "description": "Générez un texte alternatif d’image de haute qualité avec un seul compte partagé entre l’app web, Chrome, Shopify et WordPress."
+    },
+    "app": {
+      "title": "Alt Text Generator Pro App | Générez des descriptions d’images accessibles",
+      "description": "Importez des images, générez du texte alternatif et gérez les abonnements et droits partagés depuis l’app web Alt Text Generator Pro."
+    },
+    "authCallback": {
+      "title": "Connexion en cours | Alt Text Generator Pro",
+      "description": "Finalisez la connexion à votre compte Alt Text Generator Pro."
+    },
+    "billingSuccess": {
+      "title": "Facturation mise à jour | Alt Text Generator Pro",
+      "description": "Revenez dans l’app pour consulter votre dernière offre et vos droits Alt Text Generator Pro."
+    },
+    "billingCancel": {
+      "title": "Paiement annulé | Alt Text Generator Pro",
+      "description": "Aucun changement de facturation n’a été appliqué. Revenez sur Alt Text Generator Pro quand vous voulez."
+    }
+  },
+  "languageSwitcher": {
+    "label": "Langue"
+  },
+  "landing": {
+    "nav": {
+      "openApp": "Ouvrir l’app",
+      "startGenerating": "Commencer à générer"
+    },
+    "hero": {
+      "title": "Améliorez l’accessibilité avec un texte alternatif rapide et de grande qualité.",
+      "body": "Alt Text Generator Pro aide les équipes à générer un texte alternatif précis à grande échelle. Utilisez l’app web pour les imports et la génération par URL, puis connectez le même compte à Chrome, Shopify et WordPress.",
+      "launchWebApp": "Lancer l’app web",
+      "explorePlatforms": "Découvrir les plateformes",
+      "stagingNotice": "Version de préproduction : cet environnement est destiné à la validation avant mise en ligne."
+    },
+    "kpis": {
+      "channelsTitle": "3 canaux",
+      "channelsBody": "Web + extension + intégrations plateforme",
+      "accountTitle": "Compte partagé",
+      "accountBody": "Facturation et droits unifiés",
+      "batchTitle": "Prêt pour le traitement en lot",
+      "batchBody": "Générez rapidement du texte alternatif pour plusieurs ressources",
+      "info": "La même intelligence backend alimente l’app web, l’extension et les intégrations."
+    },
+    "features": {
+      "title": "Conçu pour les équipes qui publient du contenu chaque jour",
+      "subtitle": "Gardez un langage visuel cohérent, garantissez la qualité et passez par une seule couche de droits liée au compte.",
+      "contextTitle": "Génération contextualisée",
+      "contextBody": "Ajoutez un contexte facultatif et des paramètres de langue pour obtenir des descriptions plus pertinentes.",
+      "subscriptionsTitle": "Abonnements unifiés",
+      "subscriptionsBody": "Utilisez un seul compte sur tous les produits, avec une facturation centralisée et des droits par plateforme.",
+      "metadataTitle": "Téléchargement avec métadonnées",
+      "metadataBody": "Intégrez les descriptions générées dans les fichiers téléchargés pour faciliter la publication."
+    },
+    "platforms": {
+      "title": "Utilisez Alt Text Generator Pro partout où vous travaillez",
+      "subtitle": "Commencez par l’app web, puis étendez-vous à des flux spécifiques par canal."
+    },
+    "pricing": {
+      "title": "Des tarifs adaptés à votre flux de travail",
+      "subtitle": "Commencez avec un accès d’essai, puis passez à une offre par canal ou à un accès complet depuis votre compte.",
+      "freeTitle": "Gratuit",
+      "freePrice": "$0",
+      "freeBody": "Connectez-vous et commencez avec l’éligibilité à l’essai et les vérifications de droits.",
+      "singleTitle": "Canal unique",
+      "singlePrice": "À partir de 10 $",
+      "singleBody": "Débloquez dès maintenant le canal dont vous avez besoin, avec la possibilité d’étendre ensuite.",
+      "allTitle": "All Access",
+      "allPrice": "Pack",
+      "allBody": "Un seul abonnement pour Chrome, Shopify, WordPress et les usages web.",
+      "choosePlan": "Choisir l’offre",
+      "comparePlans": "Comparer les offres"
+    }
+  },
+  "channels": {
+    "live": "Disponible",
+    "waitlist": "Liste d’attente",
+    "chrome": {
+      "title": "Extension Chrome",
+      "description": "Génération au clic droit et capture des images de la page dans votre navigateur.",
+      "cta": "Utiliser sur Chrome"
+    },
+    "shopify": {
+      "title": "App Shopify",
+      "description": "Connectez vos boutiques et générez un texte alternatif cohérent pour vos flux produits.",
+      "cta": "Rejoindre la liste Shopify"
+    },
+    "wordpress": {
+      "title": "Plugin WordPress",
+      "description": "Générez et gérez du texte alternatif depuis vos flux média WordPress.",
+      "cta": "Rejoindre la liste WordPress"
+    }
+  },
+  "app": {
+    "accountHub": "Centre de compte",
+    "usageHistory": "Utilisation et historique",
+    "currentPlanPrefix": "Offre actuelle :",
+    "unlockedProducts": "Produits débloqués",
+    "noEntitlements": "Aucun droit produit pour le moment.",
+    "signInSharedAccount": "Connectez-vous avec le même compte Alt Text Generator Pro que dans Chrome. Votre compte, votre facturation et vos droits sont partagés entre les clients.",
+    "webEntitlementWarning": "Votre compte est bien connecté, mais vos droits actuels n’incluent pas la génération web. Choisissez ci-dessous une offre avec accès web.",
+    "usageAfterSignIn": "Les compteurs d’utilisation s’affichent après connexion.",
+    "recentResults": "Résultats récents",
+    "noRecentResults": "Aucune génération récente pour le moment.",
+    "plansTitle": "Offres",
+    "plansSubtitle": "Achetez le produit dont vous avez besoin maintenant ou utilisez All Access pour débloquer tous les clients avec un seul compte.",
+    "planDescriptions": {
+      "plan_web": "Imports, génération par URL, téléchargement avec métadonnées et historique récent dans l’app web.",
+      "plan_chrome": "Génération au clic droit, collecte d’images de page et flux pleine page dans l’extension.",
+      "plan_shopify": "Flux reliés à la boutique et génération avec droits pour les équipes Shopify.",
+      "plan_wordpress": "Flux de génération WordPress avec compte partagé.",
+      "plan_all_access": "Un seul abonnement qui débloque le web, Chrome, Shopify et WordPress."
+    },
+    "planTitles": {
+      "plan_web": "Web",
+      "plan_chrome": "Extension Chrome",
+      "plan_shopify": "Shopify",
+      "plan_wordpress": "WordPress",
+      "plan_all_access": "Accès complet"
+    },
+    "usage": {
+      "hour": "Heure",
+      "day": "Jour",
+      "month": "Mois"
+    },
+    "unlocks": "Débloque",
+    "generateTitle": "Générer du texte alternatif",
+    "imageUrlLabel": "Ajouter une image par URL",
+    "imageUrlPlaceholder": "https://example.com/image.jpg",
+    "contextPlaceholder": "Contexte projet, page ou éditorial pour améliorer les descriptions",
+    "noItems": "Aucune image en file d’attente. Importez des fichiers ou ajoutez une URL ci-dessus.",
+    "noAltTextYet": "Aucun texte alternatif généré pour le moment.",
+    "urlImage": "Image par URL",
+    "metadataUploadOnly": "Le téléchargement avec métadonnées est actuellement disponible uniquement pour les fichiers importés",
+    "metadataDownloadTitle": "Télécharger avec les métadonnées intégrées",
+    "signedIn": "Connecté",
+    "free": "Gratuit",
+    "paid": "Offre payante",
+    "trial": "Essai",
+    "trialDaysLeft": "Essai · {days} jour(s) restants",
+    "status": {
+      "queued": "En attente",
+      "ready": "Prêt",
+      "failed": "Échec"
+    },
+    "messages": {
+      "invalidImageUrl": "Veuillez saisir une URL d’image valide (http/https).",
+      "webPlanRequired": "Votre offre actuelle n’inclut pas la génération web. Choisissez ci-dessous une offre avec accès web.",
+      "billingUpdated": "Facturation mise à jour. Le statut de votre compte a été rechargé.",
+      "billingCancelled": "Paiement annulé. Aucun changement de facturation n’a été appliqué.",
+      "downloadedMetadata": "Téléchargé avec les métadonnées.",
+      "chooseSubscription": "Choisissez ci-dessous une offre pour démarrer votre premier abonnement.",
+      "currentPlan": "{title} est déjà votre offre actuelle.",
+      "comingSoonPlan": "{title} apparaît dans le catalogue, mais n’est pas encore disponible en achat autonome."
+    },
+    "disabled": {
+      "loading": "Chargement de la session…",
+      "signedOut": "Connectez-vous pour commencer à générer du texte alternatif.",
+      "missingEntitlement": "Votre droit actuel n’inclut pas la génération web."
+    }
+  },
+  "auth": {
+    "title": "Connexion en cours…",
+    "body": "Finalisation de l’authentification du compte."
+  },
+  "billing": {
+    "successTitle": "Actualisation de votre compte…",
+    "successBody": "Retour vers l’app et rechargement de votre dernière offre et de vos droits.",
+    "cancelTitle": "Retour vers l’app…",
+    "cancelBody": "Aucun changement de facturation n’a été appliqué."
+  }
+}

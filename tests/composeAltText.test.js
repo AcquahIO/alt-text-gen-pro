@@ -29,7 +29,8 @@ function commonChecks(out) {
 {
   const out = composeAltText('', { aria: 'Search', isSmallSquare: true }, 'functional');
   assert(/^Search$/i.test(out), 'functional -> Search');
-  commonChecks('Search link'.replace(' link','')); // trivial len check bypass
+  assert(out.length <= 120, 'functional length <= 120');
+  assert(!/\n/.test(out), 'functional no paragraphs');
 }
 
 // Logo with brand present
@@ -52,4 +53,3 @@ function commonChecks(out) {
 }
 
 console.log('composeAltText tests passed');
-

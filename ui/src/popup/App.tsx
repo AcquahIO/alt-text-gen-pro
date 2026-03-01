@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState, type MouseEventHandler } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEventHandler } from 'react';
 import { RecentImage } from '@/components/RecentImage';
 import { UploadSection } from '@/components/UploadSection';
-import { Separator } from '@/components/ui/separator';
 import { Toaster } from '@/components/ui/sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,13 +15,19 @@ import {
   setPreferredLanguage,
   setSavedContext,
   storePendingUploads,
+  queueActiveTabImagesForFullPage,
 } from '@/lib/extension';
 import { RecentAltItem } from '@/lib/types';
-import { useSession } from '@/lib/session';
+import { type PlanCode, useSession } from '@/lib/session';
 import { PlanBadge } from './components/PlanBadge';
 import { Avatar } from './components/Avatar';
 
-const MAX_RECENTS = 8;
+const UNLOCKED_SCOPE_LABELS = {
+  web: 'Web',
+  chrome: 'Chrome',
+  shopify: 'Shopify',
+  wordpress: 'WordPress',
+} as const;
 
 interface ApiResult<T> {
   data?: T;
@@ -55,20 +60,24 @@ async function callAuthorizedApi<T = any>(
   }
 }
 
-function useRecentItems() {
+function useRecentItems(userId: string, enabled: boolean) {
   const [recentItems, setRecentItems] = useState<RecentAltItem[]>([]);
 
   useEffect(() => {
+    if (!enabled || !userId) {
+      setRecentItems([]);
+      return;
+    }
     let mounted = true;
     (async () => {
-      const recents = await getRecentItems().catch(() => []);
+      const recents = await getRecentItems(userId).catch(() => []);
       if (!mounted) return;
-      setRecentItems(recents.slice(0, MAX_RECENTS));
+      setRecentItems(recents);
     })();
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [enabled, userId]);
 
   const preparedRecents = useMemo(
     () =>
@@ -80,9 +89,10 @@ function useRecentItems() {
   );
 
   const clearRecents = useCallback(async () => {
-    await clearRecentItems();
+    if (!userId) return;
+    await clearRecentItems(userId);
     setRecentItems([]);
-  }, []);
+  }, [userId]);
 
   return { preparedRecents, clearRecents };
 }
@@ -91,13 +101,23 @@ export default function PopupApp() {
   const { session, signIn, signOut, error, retry, baseUrl } = useSession();
   const token = session.status === 'signedIn' ? session.auth?.token ?? '' : '';
   const plan = session.status === 'signedIn' ? session.sub?.plan ?? 'free' : 'free';
-  const hasAccess = session.status === 'signedIn' && (plan === 'trial' || plan === 'paid');
+  const entitlements = session.status === 'signedIn' ? session.sub?.entitlements : undefined;
+  const entitlementAllowsChrome = Boolean(entitlements?.all || entitlements?.chrome);
+  const hasAccess = session.status === 'signedIn' && entitlementAllowsChrome;
 
   const [language, setLanguage] = useState('');
   const [context, setContext] = useState('');
   const [message, setMessage] = useState('');
   const [showDebug, setShowDebug] = useState(false);
-  const { preparedRecents, clearRecents } = useRecentItems();
+  const prevSessionStatus = useRef(session.status);
+  const activeUserId = session.status === 'signedIn' ? String(session.auth?.userId || '') : '';
+  const { preparedRecents, clearRecents } = useRecentItems(activeUserId, session.status === 'signedIn');
+  const unlockedScopes = useMemo(() => {
+    if (entitlements?.all) return ['All products'];
+    return (Object.keys(UNLOCKED_SCOPE_LABELS) as Array<keyof typeof UNLOCKED_SCOPE_LABELS>)
+      .filter((scope) => Boolean(entitlements?.[scope]))
+      .map((scope) => UNLOCKED_SCOPE_LABELS[scope]);
+  }, [entitlements]);
 
   useEffect(() => {
     let mounted = true;
@@ -114,6 +134,14 @@ export default function PopupApp() {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (prevSessionStatus.current !== session.status) {
+      // Clear stale status messages (e.g. "Signed out.") whenever auth state changes.
+      setMessage('');
+      prevSessionStatus.current = session.status;
+    }
+  }, [session.status]);
 
   const openFullPageAndClose = useCallback(async () => {
     await openFullPageView();
@@ -147,10 +175,29 @@ export default function PopupApp() {
     await openFullPageAndClose();
   }, [language, context, openFullPageAndClose]);
 
+  const handleGenerateCurrentPage = useCallback(async () => {
+    await Promise.all([
+      setPreferredLanguage(language || ''),
+      setSavedContext(context || ''),
+    ]);
+    try {
+      const queued = await queueActiveTabImagesForFullPage({ language, context });
+      if (!queued) {
+        setMessage('No images found on this page.');
+        return;
+      }
+      await openFullPageAndClose();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Unable to collect images from this page.');
+    }
+  }, [language, context, openFullPageAndClose]);
+
   const ensureSignedIn = useCallback(async () => {
     if (session.status === 'signedIn') return true;
     try {
+      setMessage('');
       await signIn();
+      setMessage('');
       return true;
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Sign-in cancelled');
@@ -158,51 +205,70 @@ export default function PopupApp() {
     }
   }, [session.status, signIn]);
 
-  const startTrial = useCallback(async () => {
-    if (session.status === 'signedIn' && session.sub?.trialEligible === false) {
-      setMessage('You have already used your free trial. Subscribe now to continue using Alt Text Generator Pro.');
+  const openCheckoutUrl = useCallback(async (url: string, successMessage: string) => {
+    if (chrome?.tabs?.create) {
+      await chrome.tabs.create({ url });
+    } else {
+      window.open(url, '_blank');
+    }
+    setMessage(successMessage);
+  }, []);
+
+  const startCheckout = useCallback(async (
+    planCode: PlanCode,
+    options: {
+      skipTrial?: boolean;
+      preparingMessage: string;
+      successMessage: string;
+    },
+  ) => {
+    if (session.status === 'signedIn' && !options.skipTrial && session.sub?.trialEligible === false) {
+      setMessage('You have already used your free trial. Start a paid plan to keep generating alt text.');
       return;
     }
     if (!(await ensureSignedIn()) || !baseUrl || !token) return;
-    setMessage('Preparing checkout…');
+    setMessage(options.preparingMessage);
     const result = await callAuthorizedApi<{ url: string }>(baseUrl, token, '/api/create-checkout-session', {
       method: 'POST',
+      body: JSON.stringify({
+        planCode,
+        ...(options.skipTrial ? { skipTrial: true } : {}),
+      }),
     });
     if (result.error || !result.data) {
       setMessage(result.error ?? 'Unable to create checkout session');
       return;
     }
-    if (chrome?.tabs?.create) {
-      await chrome.tabs.create({ url: result.data.url });
-    } else {
-      window.open(result.data.url, '_blank');
-    }
-    setMessage('Checkout opened in a new tab.');
-  }, [baseUrl, token, ensureSignedIn, session.status, session.sub?.trialEligible]);
+    await openCheckoutUrl(result.data.url, options.successMessage);
+  }, [baseUrl, ensureSignedIn, openCheckoutUrl, session.status, session.sub?.trialEligible, token]);
 
-  const startSubscriptionNow = useCallback(async () => {
-    if (!(await ensureSignedIn()) || !baseUrl || !token) return;
-    setMessage('Preparing subscription checkout…');
-    const result = await callAuthorizedApi<{ url: string }>(baseUrl, token, '/api/create-checkout-session', {
-      method: 'POST',
-      body: JSON.stringify({ skipTrial: true }),
+  const startTrial = useCallback(async () => {
+    await startCheckout('plan_chrome', {
+      preparingMessage: 'Preparing Chrome trial checkout…',
+      successMessage: 'Chrome trial checkout opened in a new tab.',
     });
-    if (result.error || !result.data) {
-      setMessage(result.error ?? 'Unable to start subscription');
-      return;
-    }
-    if (chrome?.tabs?.create) {
-      await chrome.tabs.create({ url: result.data.url });
-    } else {
-      window.open(result.data.url, '_blank');
-    }
-    setMessage('Subscription checkout opened in a new tab.');
-  }, [baseUrl, token, ensureSignedIn]);
+  }, [startCheckout]);
+
+  const startChromeSubscription = useCallback(async () => {
+    await startCheckout('plan_chrome', {
+      skipTrial: true,
+      preparingMessage: 'Preparing Chrome subscription checkout…',
+      successMessage: 'Chrome subscription checkout opened in a new tab.',
+    });
+  }, [startCheckout]);
+
+  const startAllAccessSubscription = useCallback(async () => {
+    await startCheckout('plan_all_access', {
+      skipTrial: session.sub?.trialEligible === false,
+      preparingMessage: 'Preparing All Access checkout…',
+      successMessage: 'All Access checkout opened in a new tab.',
+    });
+  }, [session.sub?.trialEligible, startCheckout]);
 
   const openBillingPortal = useCallback(async () => {
     if (!(await ensureSignedIn()) || !baseUrl || !token) return;
     if (!session.sub?.hasStripeCustomer) {
-      setMessage('You are still on a free trial. Choose “Subscribe now” to start your subscription immediately.');
+      setMessage('Choose Chrome or All Access to start your first paid subscription.');
       return;
     }
     if (session.sub?.providerPortalUrl) {
@@ -232,23 +298,26 @@ export default function PopupApp() {
   const handleManageOrUpgrade = useCallback(async () => {
     if (plan === 'free') {
       if (session.sub?.trialEligible === false) {
-        setMessage('Your free trial has already been used. Choose “Subscribe now” to keep generating alt text.');
+        setMessage('Your free trial has already been used. Choose Chrome or All Access to keep generating alt text.');
       } else {
-        setMessage('Choose “Start free trial” or “Subscribe now” above to unlock full access.');
+        setMessage('Choose Chrome or All Access above to unlock extension generation.');
       }
       return;
     }
     if (plan === 'trial' && !session.sub?.hasStripeCustomer) {
-      setMessage('You’re still on your free trial. Select “Subscribe now” to start your subscription immediately.');
+      setMessage('You’re still on your free trial. Select Chrome or All Access to start your paid subscription immediately.');
       return;
     }
     await openBillingPortal();
-  }, [plan, openBillingPortal, session.sub?.hasStripeCustomer, session.sub?.trialEligible, setMessage]);
+  }, [plan, openBillingPortal, session.sub?.hasStripeCustomer, session.sub?.trialEligible]);
 
   const handleSignOut = useCallback(async () => {
     await signOut();
-    setMessage('Signed out.');
   }, [signOut]);
+
+  const handleSignIn = useCallback(async () => {
+    await ensureSignedIn();
+  }, [ensureSignedIn]);
 
   const handleDebugToggle = useCallback<MouseEventHandler<HTMLDivElement>>((event) => {
     if (event.altKey) {
@@ -263,15 +332,27 @@ export default function PopupApp() {
   const disabledMessage = useMemo(() => {
     if (session.status === 'loading') return 'Loading session…';
     if (session.status !== 'signedIn') return 'Sign in to start your free trial and generate alt text.';
-    if (!hasAccess) return 'Upgrade your plan to continue generating alt text.';
+    if (!hasAccess) return 'Your current account does not include Chrome generation. Upgrade to Chrome or All Access.';
     return undefined;
   }, [session.status, hasAccess]);
 
   return (
-    <div className="w-[500px] min-h-[600px] bg-background text-foreground">
-      <div className="flex items-center gap-2 px-6 py-4 border-b select-none" onClick={handleDebugToggle}>
-        <img src={getRuntimeUrl('icons/icon32.png')} alt="Alt Text Generator" className="w-6 h-6 rounded-md" />
-        <h1 className="text-lg font-semibold">Alt Text Generator</h1>
+    <div className="w-[500px] min-h-[600px] text-foreground" style={{ background: '#f8fbff' }}>
+      <div
+        className="flex items-center gap-3 px-6 py-4 border-b select-none"
+        style={{
+          borderColor: '#dbeafe',
+          background: '#ffffff',
+        }}
+        onClick={handleDebugToggle}
+      >
+        <img src={getRuntimeUrl('icons/icon-32.png')} alt="Alt Text Generator" className="w-7 h-7 rounded-md" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <h1 className="text-lg font-semibold" style={{ lineHeight: 1.1, letterSpacing: '-0.01em', color: '#0b1b44' }}>
+            Alt Text Generator
+          </h1>
+          <p className="text-xs text-muted-foreground">Generate high-quality image descriptions</p>
+        </div>
         {showDebug && (
           <Badge variant="outline" className="ml-auto">
             Debug
@@ -279,63 +360,114 @@ export default function PopupApp() {
         )}
       </div>
 
-      <div className="p-6 space-y-6">
-        <div className="rounded-lg border bg-white shadow-sm p-4 space-y-3">
+      <div className="p-6 space-y-5">
+        <div
+          className="rounded-xl border p-4 space-y-3 shadow-sm"
+          style={{
+            borderColor: '#dbeafe',
+            background: '#ffffff',
+            boxShadow: '0 2px 12px rgba(30, 58, 138, 0.06)',
+          }}
+        >
           {session.status === 'signedIn' ? (
             <>
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <Avatar url={avatarUrl ?? undefined} name={authDisplayName} />
-                  <div className="space-y-0.5">
-                    <p className="text-sm font-semibold text-foreground">Signed in</p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <Avatar url={avatarUrl ?? undefined} name={authDisplayName} tone={plan} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <p className="text-sm font-semibold text-foreground">Signed in</p>
+                      <PlanBadge plan={plan} trialEndsAt={session.sub?.trialEndsAt} />
+                    </div>
                     <p className="text-sm text-muted-foreground">{authDisplayName}</p>
                   </div>
                 </div>
-                <PlanBadge plan={plan} trialEndsAt={session.sub?.trialEndsAt} />
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                  {plan === 'free' && session.sub?.trialEligible !== false && (
+                    <Button variant="outline" size="sm" onClick={startTrial}>
+                      Start Chrome trial
+                    </Button>
+                  )}
+                  {(plan === 'free' || (plan === 'trial' && !hasStripeCustomer)) && (
+                    <Button
+                      size="sm"
+                      onClick={startChromeSubscription}
+                      style={{
+                        backgroundColor: '#0b1b44',
+                        color: '#ffffff',
+                        border: '1px solid #0b1b44',
+                        borderRadius: 12,
+                      }}
+                    >
+                      Subscribe Chrome
+                    </Button>
+                  )}
+                  {(plan === 'free' || (plan === 'trial' && !hasStripeCustomer)) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={startAllAccessSubscription}
+                    >
+                      Get All Access
+                    </Button>
+                  )}
+                  {(plan === 'trial' && hasStripeCustomer) || plan === 'paid' ? (
+                    <Button
+                      size="sm"
+                      onClick={openBillingPortal}
+                      style={{
+                        backgroundColor: '#0b1b44',
+                        color: '#ffffff',
+                        border: '1px solid #0b1b44',
+                        borderRadius: 12,
+                      }}
+                    >
+                      Manage subscription
+                    </Button>
+                  ) : null}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSignOut}
+                    style={{ color: '#dc2626', paddingInline: 8 }}
+                  >
+                    Sign out
+                  </Button>
+                </div>
               </div>
+
+              <div className="text-xs text-muted-foreground">{session.auth?.email}</div>
+              <div className="flex flex-wrap gap-2">
+                {unlockedScopes.length ? (
+                  unlockedScopes.map((scope) => (
+                    <Badge key={scope} variant="outline">
+                      {scope}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-xs text-muted-foreground">No product entitlements yet.</span>
+                )}
+              </div>
+
               {session.sub?.renewsAt && plan === 'paid' && (
                 <p className="text-xs text-muted-foreground">Renews on {new Date(session.sub.renewsAt).toLocaleDateString()}</p>
               )}
-              <div className="flex flex-wrap gap-2">
-                {plan === 'free' && (
-                  <>
-                    <Button variant="outline" onClick={startTrial}>
-                      Start free trial
-                    </Button>
-                    <Button variant="outline" onClick={startSubscriptionNow}>
-                      Subscribe now
-                    </Button>
-                  </>
-                )}
-                {plan === 'trial' && !hasStripeCustomer && (
-                  <Button variant="outline" onClick={startSubscriptionNow}>
-                    Subscribe now
-                  </Button>
-                )}
-                {plan === 'trial' && hasStripeCustomer && (
-                  <Button variant="outline" onClick={openBillingPortal}>
-                    Manage subscription
-                  </Button>
-                )}
-                {plan === 'paid' && (
-                  <Button variant="outline" onClick={openBillingPortal}>
-                    Manage subscription
-                  </Button>
-                )}
-                <Button variant="ghost" onClick={handleSignOut}>
-                  Sign out
-                </Button>
-              </div>
               {plan === 'free' && (
                 <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
                   {session.sub?.trialEligible === false
-                    ? 'You’ve already used your 3-day trial with this account. Subscribe now to keep generating alt text.'
-                    : 'Start a 3-day trial to test everything first, or subscribe right away if you’re ready.'}
+                    ? 'You’ve already used your 3-day trial with this account. Choose Chrome or All Access to keep generating alt text.'
+                    : 'Use the same account across web and Chrome. Start a Chrome trial, subscribe to Chrome, or choose All Access.'}
                 </div>
               )}
               {plan === 'trial' && !hasStripeCustomer && (
                 <div className="rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900">
-                  You’re on a free trial. Keep using it, or choose “Subscribe now” to skip the remaining days and begin your paid subscription immediately.
+                  You’re on a free trial. Keep using it, or choose Chrome or All Access to begin your paid subscription immediately.
+                </div>
+              )}
+              {!hasAccess && session.status === 'signedIn' && (
+                <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                  This account is signed in, but Chrome generation is not unlocked. Web-only access is valid for the web app but not for the extension.
                 </div>
               )}
             </>
@@ -343,13 +475,21 @@ export default function PopupApp() {
             <>
               <div className="flex items-start justify-between gap-3">
                 <p className="text-sm text-slate-700">
-                  Sign in with Google to continue. You can start a 3-day free trial during sign-up and cancel anytime from the billing portal.
+                  Sign in with the same Alt Text Generator Pro account you use on the web. Billing and entitlements are shared across clients.
                 </p>
                 <Badge variant="outline">You&apos;re signed out</Badge>
               </div>
               <div className="flex flex-col gap-2">
-                <Button onClick={signIn} disabled={session.status === 'loading'}>
-                  {session.status === 'loading' ? 'Opening sign-in…' : 'Sign in with Google'}
+                <Button
+                  onClick={handleSignIn}
+                  disabled={session.status === 'loading'}
+                  style={{
+                    backgroundColor: '#0b1b44',
+                    color: '#ffffff',
+                    border: '1px solid #0b1b44',
+                  }}
+                >
+                  {session.status === 'loading' ? 'Opening sign-in…' : 'Sign in'}
                 </Button>
               </div>
             </>
@@ -362,14 +502,15 @@ export default function PopupApp() {
               </Button>
             </div>
           )}
-          {message && <div className="text-sm text-indigo-700">{message}</div>}
+          {message && (
+            <div className="text-sm rounded-md border px-3 py-2" style={{ background: '#eef2ff', borderColor: '#c7d2fe', color: '#3730a3' }}>
+              {message}
+            </div>
+          )}
         </div>
 
-        {preparedRecents.length > 0 && (
-          <>
-            <RecentImage items={preparedRecents} onClear={clearRecents} />
-            <Separator />
-          </>
+        {session.status === 'signedIn' && preparedRecents.length > 0 && (
+          <RecentImage items={preparedRecents} onClear={clearRecents} />
         )}
 
         <UploadSection
@@ -385,6 +526,7 @@ export default function PopupApp() {
           }}
           onFilesSelected={handleFilesSelected}
           onOpenFullPage={handleOpenFullPage}
+          onGenerateCurrentPage={handleGenerateCurrentPage}
           disabled={!hasAccess || session.status === 'loading'}
           disabledMessage={disabledMessage}
           onRequireAuth={async () => {

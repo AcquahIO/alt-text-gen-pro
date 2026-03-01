@@ -34,5 +34,16 @@
       "js": ["content.js"],
       "run_at": "document_idle"
     }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/icon-32.png",
+        "icons/icon-16.png",
+        "icons/action-icon-32.png",
+        "icons/action-icon-16.png"
+      ],
+      "matches": ["http://*/*", "https://*/*"]
+    }
   ]
 }

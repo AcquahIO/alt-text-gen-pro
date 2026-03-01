@@ -1,4 +1,4 @@
-const KNOWN_PRODUCTION_ORIGINS = ['https://alt-text-gen-pro-backend.herokuapp.com'];
+const KNOWN_PRODUCTION_ORIGINS = ['https://alt-text-gen-pro-backend-4e3b4315d0d7.herokuapp.com'];
 const FALLBACK_PRODUCTION_BASE = KNOWN_PRODUCTION_ORIGINS[0];
 
 export function normalizeBaseUrl(url) {

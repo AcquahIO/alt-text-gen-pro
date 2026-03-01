@@ -98,7 +98,8 @@ export function getRuntimeUrl(path: string): string {
 }
 
 export async function openFullPageView(): Promise<void> {
-  const url = getRuntimeUrl('ui-dist/fullpage.html');
+  const cacheBust = Date.now();
+  const url = `${getRuntimeUrl('ui-dist/fullpage.html')}?v=${cacheBust}`;
   if (isExtensionEnvironment && chromeApi?.tabs?.create) {
     await new Promise<void>((resolve) => {
       chromeApi.tabs.create({ url }, () => resolve());
@@ -189,26 +190,39 @@ export async function setSavedContext(value: string): Promise<void> {
   localStorage.setItem(CONTEXT_KEY, value);
 }
 
-export async function getRecentItems(): Promise<RecentAltItem[]> {
+function toUserRecentKey(userId?: string): string {
+  const id = String(userId || '').trim();
+  return id ? `user:${id}` : '';
+}
+
+export async function getRecentItems(userId?: string): Promise<RecentAltItem[]> {
+  const userKey = toUserRecentKey(userId);
+  if (!userKey) return [];
   if (isExtensionEnvironment && chromeApi?.storage?.local) {
-    const { recentAlts } = await chromeApi.storage.local.get('recentAlts');
-    if (Array.isArray(recentAlts)) return recentAlts as RecentAltItem[];
+    const result = await chromeApi.storage.local.get({ recentAltsByUser: {} as Record<string, RecentAltItem[]> });
+    const bucket = (result.recentAltsByUser || {})[userKey];
+    if (Array.isArray(bucket)) return bucket as RecentAltItem[];
     return [];
   }
   try {
-    const raw = localStorage.getItem('recentAlts');
+    const raw = localStorage.getItem(`recentAlts:${userKey}`);
     return raw ? (JSON.parse(raw) as RecentAltItem[]) : [];
   } catch {
     return [];
   }
 }
 
-export async function clearRecentItems(): Promise<void> {
+export async function clearRecentItems(userId?: string): Promise<void> {
+  const userKey = toUserRecentKey(userId);
+  if (!userKey) return;
   if (isExtensionEnvironment && chromeApi?.storage?.local) {
-    await chromeApi.storage.local.set({ recentAlts: [] });
+    const result = await chromeApi.storage.local.get({ recentAltsByUser: {} as Record<string, RecentAltItem[]> });
+    const next = { ...(result.recentAltsByUser || {}) } as Record<string, RecentAltItem[]>;
+    delete next[userKey];
+    await chromeApi.storage.local.set({ recentAltsByUser: next });
     return;
   }
-  localStorage.removeItem('recentAlts');
+  localStorage.removeItem(`recentAlts:${userKey}`);
 }
 
 export async function sendRuntimeMessage<T = unknown>(message: unknown): Promise<T> {
@@ -224,6 +238,18 @@ export async function sendRuntimeMessage<T = unknown>(message: unknown): Promise
     });
   }
   throw new Error('Runtime messaging unavailable');
+}
+
+export async function queueActiveTabImagesForFullPage(extras: { language?: string; context?: string } = {}): Promise<number> {
+  const res = await sendRuntimeMessage<{ ok: boolean; queued?: number; error?: string }>({
+    type: 'queueActiveTabImagesForFullPage',
+    language: extras.language ?? '',
+    context: extras.context ?? '',
+  });
+  if (!res?.ok) {
+    throw new Error(res?.error || 'Unable to collect page images');
+  }
+  return Number(res.queued || 0);
 }
 
 export async function generateAltTextForDataUrl(dataUrl: string, context: string): Promise<{ altText: string; blendedAlt?: string }>

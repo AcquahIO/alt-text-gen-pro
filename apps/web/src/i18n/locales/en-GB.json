@@ -1,0 +1,215 @@
+{
+  "brand": {
+    "name": "Alt Text Generator Pro",
+    "shortName": "AT",
+    "tagline": "Web, Chrome, Shopify, WordPress",
+    "sharedTagline": "Shared account across web, Chrome, Shopify, and WordPress",
+    "footer": "Alt Text Generator Pro · Accessibility-first image description workflows"
+  },
+  "common": {
+    "home": "Home",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "openApp": "Open App",
+    "startGenerating": "Start Generating",
+    "launchWebApp": "Launch Web App",
+    "explorePlatforms": "Explore Platforms",
+    "backToHome": "Back to home",
+    "returnToApp": "Return to app",
+    "refreshStatus": "Refresh status",
+    "manageSwitchPlan": "Manage / switch plan",
+    "clear": "Clear",
+    "copy": "Copy",
+    "generate": "Generate",
+    "generateAll": "Generate all",
+    "generating": "Generating…",
+    "chooseFiles": "Choose files",
+    "add": "Add",
+    "downloadMetadata": "Download metadata",
+    "language": "Language",
+    "optionalContext": "Optional context",
+    "comingSoon": "Coming soon",
+    "current": "Current",
+    "bundle": "Bundle",
+    "singleProduct": "Single product",
+    "signInToChoose": "Sign in to choose",
+    "manageSwitch": "Manage / switch",
+    "choosePlan": "Choose plan",
+    "startTrial": "Start trial",
+    "copiedToClipboard": "Copied to clipboard."
+  },
+  "seo": {
+    "siteName": "Alt Text Generator Pro",
+    "landing": {
+      "title": "Alt Text Generator Pro | AI alt text for web, Chrome, Shopify, and WordPress",
+      "description": "Generate high-quality image alt text with one shared account across the web app, Chrome, Shopify, and WordPress."
+    },
+    "app": {
+      "title": "Alt Text Generator Pro App | Generate accessible image descriptions",
+      "description": "Upload images, generate alt text, and manage shared subscriptions and entitlements from the Alt Text Generator Pro web app."
+    },
+    "authCallback": {
+      "title": "Signing in | Alt Text Generator Pro",
+      "description": "Complete sign-in for your Alt Text Generator Pro account."
+    },
+    "billingSuccess": {
+      "title": "Billing updated | Alt Text Generator Pro",
+      "description": "Return to the app and review your latest Alt Text Generator Pro plan and entitlements."
+    },
+    "billingCancel": {
+      "title": "Checkout cancelled | Alt Text Generator Pro",
+      "description": "No billing changes were applied. Return to Alt Text Generator Pro whenever you are ready."
+    }
+  },
+  "languageSwitcher": {
+    "label": "Language"
+  },
+  "landing": {
+    "nav": {
+      "openApp": "Open App",
+      "startGenerating": "Start Generating"
+    },
+    "hero": {
+      "title": "Ship better accessibility with fast, high-quality alt text.",
+      "body": "Alt Text Generator Pro helps teams generate accurate alt text at scale. Use the web app for uploads and URL generation, then connect the same account across Chrome, Shopify, and WordPress.",
+      "launchWebApp": "Launch Web App",
+      "explorePlatforms": "Explore Platforms",
+      "stagingNotice": "Staging build: this environment is intended for pre-release validation."
+    },
+    "kpis": {
+      "channelsTitle": "3 channels",
+      "channelsBody": "Web + extension + platform integrations",
+      "accountTitle": "Shared account",
+      "accountBody": "Unified billing and entitlements",
+      "batchTitle": "Batch-ready",
+      "batchBody": "Generate alt text for multiple assets quickly",
+      "info": "The same backend intelligence powers the web app, extension, and integrations."
+    },
+    "features": {
+      "title": "Built for teams shipping content every day",
+      "subtitle": "Keep visual language consistent, enforce quality, and route through one entitlement-aware account layer.",
+      "contextTitle": "Context-aware generation",
+      "contextBody": "Provide optional context and language settings to produce cleaner, more relevant descriptions.",
+      "subscriptionsTitle": "Unified subscriptions",
+      "subscriptionsBody": "Use one account across products, with centralised billing and platform entitlements.",
+      "metadataTitle": "Download with metadata",
+      "metadataBody": "Embed generated descriptions into downloaded files for smoother publishing handoff."
+    },
+    "platforms": {
+      "title": "Use Alt Text Generator Pro anywhere you work",
+      "subtitle": "Start with the web app, then expand to channel-specific workflows."
+    },
+    "pricing": {
+      "title": "Pricing that scales with your workflow",
+      "subtitle": "Start with trial access, then upgrade to channel-specific or all-access plans in your account dashboard.",
+      "freeTitle": "Free",
+      "freePrice": "$0",
+      "freeBody": "Sign in and start with trial eligibility and entitlement-based access checks.",
+      "singleTitle": "Single Channel",
+      "singlePrice": "From $10",
+      "singleBody": "Unlock the channel you need now, with options to expand later.",
+      "allTitle": "All Access",
+      "allPrice": "Bundle",
+      "allBody": "One subscription for Chrome, Shopify, WordPress, and web usage flows.",
+      "choosePlan": "Choose Plan",
+      "comparePlans": "Compare Plans"
+    }
+  },
+  "channels": {
+    "live": "Live",
+    "waitlist": "Waitlist",
+    "chrome": {
+      "title": "Chrome Extension",
+      "description": "Right-click generation and page-level image capture in your browser.",
+      "cta": "Use on Chrome"
+    },
+    "shopify": {
+      "title": "Shopify App",
+      "description": "Connect stores and generate consistent alt text for product workflows.",
+      "cta": "Join Shopify Waitlist"
+    },
+    "wordpress": {
+      "title": "WordPress Plugin",
+      "description": "Generate and manage alt text from your WordPress media workflows.",
+      "cta": "Join WordPress Waitlist"
+    }
+  },
+  "app": {
+    "accountHub": "Account hub",
+    "usageHistory": "Usage and history",
+    "currentPlanPrefix": "Current plan:",
+    "unlockedProducts": "Unlocked products",
+    "noEntitlements": "No product entitlements yet.",
+    "signInSharedAccount": "Sign in with the same Alt Text Generator Pro account you use in Chrome. Your account, billing, and entitlements are shared across clients.",
+    "webEntitlementWarning": "Your account is signed in, but your current entitlements do not include web generation. Choose a web-enabled plan below.",
+    "usageAfterSignIn": "Usage counters appear after sign-in.",
+    "recentResults": "Recent results",
+    "noRecentResults": "No recent generations yet.",
+    "plansTitle": "Plans",
+    "plansSubtitle": "Buy the product you need now, or use All Access to unlock every client with one account.",
+    "planDescriptions": {
+      "plan_web": "Uploads, URL-based generation, metadata download, and recent history in the web app.",
+      "plan_chrome": "Right-click generation, page-level image collection, and the extension full-page workflow.",
+      "plan_shopify": "Store-connected product workflows and entitlement-aware generation for Shopify teams.",
+      "plan_wordpress": "Shared-account media generation workflows inside WordPress.",
+      "plan_all_access": "One subscription that unlocks web, Chrome, Shopify, and WordPress."
+    },
+    "planTitles": {
+      "plan_web": "Web",
+      "plan_chrome": "Chrome Extension",
+      "plan_shopify": "Shopify",
+      "plan_wordpress": "WordPress",
+      "plan_all_access": "All Access"
+    },
+    "usage": {
+      "hour": "Hour",
+      "day": "Day",
+      "month": "Month"
+    },
+    "unlocks": "Unlocks",
+    "generateTitle": "Generate Alt Text",
+    "imageUrlLabel": "Add image by URL",
+    "imageUrlPlaceholder": "https://example.com/image.jpg",
+    "contextPlaceholder": "Project, page, or editorial context to improve descriptions",
+    "noItems": "No images queued yet. Upload files or add an image URL above.",
+    "noAltTextYet": "No alt text generated yet.",
+    "urlImage": "URL image",
+    "metadataUploadOnly": "Metadata download is currently available for uploaded files only",
+    "metadataDownloadTitle": "Download with embedded metadata",
+    "signedIn": "Signed in",
+    "free": "Free",
+    "paid": "Paid plan",
+    "trial": "Trial",
+    "trialDaysLeft": "Trial · {days} day(s) left",
+    "status": {
+      "queued": "Queued",
+      "ready": "Ready",
+      "failed": "Failed"
+    },
+    "messages": {
+      "invalidImageUrl": "Please enter a valid image URL (http/https).",
+      "webPlanRequired": "Your current plan does not include web generation. Choose a web-enabled plan below.",
+      "billingUpdated": "Billing updated. Your account status has been refreshed.",
+      "billingCancelled": "Checkout cancelled. No billing changes were applied.",
+      "downloadedMetadata": "Downloaded with metadata.",
+      "chooseSubscription": "Choose a plan below to start your first subscription.",
+      "currentPlan": "{title} is already your current plan.",
+      "comingSoonPlan": "{title} is visible in the catalogue but not available for self-serve purchase yet."
+    },
+    "disabled": {
+      "loading": "Loading session…",
+      "signedOut": "Sign in to start generating alt text.",
+      "missingEntitlement": "Your current entitlement does not include web generation."
+    }
+  },
+  "auth": {
+    "title": "Signing you in…",
+    "body": "Completing account authentication."
+  },
+  "billing": {
+    "successTitle": "Refreshing your account…",
+    "successBody": "Returning to the app and reloading your latest plan and entitlement status.",
+    "cancelTitle": "Returning to the app…",
+    "cancelBody": "No billing changes were applied."
+  }
+}

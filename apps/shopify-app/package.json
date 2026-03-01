@@ -1,0 +1,17 @@
+{
+  "name": "alt-text-generator-pro-shopify-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "lint": "node --check src/index.js && node --check src/env.js && node --check src/shopify.js && node --check src/tokenStore.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "morgan": "^1.10.0",
+    "zod": "^3.24.2"
+  }
+}

@@ -1,0 +1,215 @@
+{
+  "brand": {
+    "name": "Alt Text Generator Pro",
+    "shortName": "AT",
+    "tagline": "Web、Chrome、Shopify、WordPress",
+    "sharedTagline": "Web、Chrome、Shopify 和 WordPress 共享同一账户",
+    "footer": "Alt Text Generator Pro · 以无障碍为先的图片描述工作流"
+  },
+  "common": {
+    "home": "首页",
+    "signIn": "登录",
+    "signOut": "退出登录",
+    "openApp": "打开应用",
+    "startGenerating": "开始生成",
+    "launchWebApp": "启动网页应用",
+    "explorePlatforms": "查看平台",
+    "backToHome": "返回首页",
+    "returnToApp": "返回应用",
+    "refreshStatus": "刷新状态",
+    "manageSwitchPlan": "管理 / 切换套餐",
+    "clear": "清除",
+    "copy": "复制",
+    "generate": "生成",
+    "generateAll": "全部生成",
+    "generating": "生成中…",
+    "chooseFiles": "选择文件",
+    "add": "添加",
+    "downloadMetadata": "下载元数据",
+    "language": "语言",
+    "optionalContext": "可选上下文",
+    "comingSoon": "即将推出",
+    "current": "当前",
+    "bundle": "组合包",
+    "singleProduct": "单独产品",
+    "signInToChoose": "登录后选择",
+    "manageSwitch": "管理 / 切换",
+    "choosePlan": "选择套餐",
+    "startTrial": "开始试用",
+    "copiedToClipboard": "已复制到剪贴板。"
+  },
+  "seo": {
+    "siteName": "Alt Text Generator Pro",
+    "landing": {
+      "title": "Alt Text Generator Pro | 面向 Web、Chrome、Shopify 和 WordPress 的 AI 替代文本",
+      "description": "使用同一个共享账户，在网页应用、Chrome、Shopify 和 WordPress 上生成高质量图片替代文本。"
+    },
+    "app": {
+      "title": "Alt Text Generator Pro 应用 | 生成无障碍图片描述",
+      "description": "上传图片、生成替代文本，并在 Alt Text Generator Pro 网页应用中管理共享订阅和权限。"
+    },
+    "authCallback": {
+      "title": "正在登录 | Alt Text Generator Pro",
+      "description": "完成你的 Alt Text Generator Pro 账户登录。"
+    },
+    "billingSuccess": {
+      "title": "账单已更新 | Alt Text Generator Pro",
+      "description": "返回应用，查看最新的 Alt Text Generator Pro 套餐和权限。"
+    },
+    "billingCancel": {
+      "title": "结账已取消 | Alt Text Generator Pro",
+      "description": "未应用任何账单变更。你可以随时返回 Alt Text Generator Pro。"
+    }
+  },
+  "languageSwitcher": {
+    "label": "语言"
+  },
+  "landing": {
+    "nav": {
+      "openApp": "打开应用",
+      "startGenerating": "开始生成"
+    },
+    "hero": {
+      "title": "用快速、高质量的替代文本提升无障碍体验。",
+      "body": "Alt Text Generator Pro 帮助团队大规模生成准确的替代文本。你可以在网页应用中上传图片并通过 URL 生成，然后在 Chrome、Shopify 和 WordPress 中使用同一个账户。",
+      "launchWebApp": "启动网页应用",
+      "explorePlatforms": "查看平台",
+      "stagingNotice": "预发布环境：此环境仅用于上线前验证。"
+    },
+    "kpis": {
+      "channelsTitle": "3 个渠道",
+      "channelsBody": "网页 + 扩展 + 平台集成",
+      "accountTitle": "共享账户",
+      "accountBody": "统一账单与权限",
+      "batchTitle": "支持批量",
+      "batchBody": "快速为多张图片生成替代文本",
+      "info": "同一套后端能力同时支持网页应用、浏览器扩展和平台集成。"
+    },
+    "features": {
+      "title": "面向每天发布内容的团队打造",
+      "subtitle": "保持视觉语言一致，落实质量标准，并通过统一的账户权限层进行管理。",
+      "contextTitle": "基于上下文的生成",
+      "contextBody": "添加可选上下文和语言设置，生成更准确、更相关的描述。",
+      "subscriptionsTitle": "统一订阅",
+      "subscriptionsBody": "一个账户可跨产品使用，并享受集中账单与平台权限管理。",
+      "metadataTitle": "带元数据下载",
+      "metadataBody": "将生成的描述嵌入下载文件中，方便后续发布交接。"
+    },
+    "platforms": {
+      "title": "在你工作的任何地方使用 Alt Text Generator Pro",
+      "subtitle": "先从网页应用开始，再扩展到各个平台的专属工作流。"
+    },
+    "pricing": {
+      "title": "随工作流扩展的价格方案",
+      "subtitle": "先从试用开始，再在账户面板中升级到单渠道或全量访问套餐。",
+      "freeTitle": "免费",
+      "freePrice": "$0",
+      "freeBody": "登录后即可开始使用试用资格和权限校验。",
+      "singleTitle": "单渠道",
+      "singlePrice": "10 美元起",
+      "singleBody": "先解锁你当前需要的渠道，之后可随时扩展。",
+      "allTitle": "全量访问",
+      "allPrice": "组合包",
+      "allBody": "一个订阅即可覆盖 Chrome、Shopify、WordPress 和网页应用。",
+      "choosePlan": "选择套餐",
+      "comparePlans": "比较套餐"
+    }
+  },
+  "channels": {
+    "live": "已上线",
+    "waitlist": "候补名单",
+    "chrome": {
+      "title": "Chrome 扩展",
+      "description": "在浏览器中右键生成，并捕获整页图片。",
+      "cta": "在 Chrome 中使用"
+    },
+    "shopify": {
+      "title": "Shopify 应用",
+      "description": "连接店铺，为商品工作流生成一致的替代文本。",
+      "cta": "加入 Shopify 候补名单"
+    },
+    "wordpress": {
+      "title": "WordPress 插件",
+      "description": "在 WordPress 媒体工作流中生成并管理替代文本。",
+      "cta": "加入 WordPress 候补名单"
+    }
+  },
+  "app": {
+    "accountHub": "账户中心",
+    "usageHistory": "用量与历史记录",
+    "currentPlanPrefix": "当前套餐：",
+    "unlockedProducts": "已解锁产品",
+    "noEntitlements": "目前还没有任何产品权限。",
+    "signInSharedAccount": "使用你在 Chrome 中使用的同一个 Alt Text Generator Pro 账户登录。你的账户、账单和权限会在各端共享。",
+    "webEntitlementWarning": "你已登录，但当前权限不包含网页端生成。请在下方选择支持网页端的套餐。",
+    "usageAfterSignIn": "登录后即可查看用量统计。",
+    "recentResults": "最近结果",
+    "noRecentResults": "暂时还没有最近生成记录。",
+    "plansTitle": "套餐",
+    "plansSubtitle": "现在就购买你需要的产品，或使用 All Access 通过一个账户解锁所有端。",
+    "planDescriptions": {
+      "plan_web": "支持上传、URL 生成、元数据下载以及网页应用中的最近历史记录。",
+      "plan_chrome": "支持右键生成、页面图片收集以及扩展中的整页工作流。",
+      "plan_shopify": "面向 Shopify 团队的店铺工作流与权限控制生成。",
+      "plan_wordpress": "使用共享账户在 WordPress 中进行生成工作流。",
+      "plan_all_access": "一个订阅即可解锁网页、Chrome、Shopify 和 WordPress。"
+    },
+    "planTitles": {
+      "plan_web": "网页应用",
+      "plan_chrome": "Chrome 扩展",
+      "plan_shopify": "Shopify",
+      "plan_wordpress": "WordPress",
+      "plan_all_access": "全量访问"
+    },
+    "usage": {
+      "hour": "小时",
+      "day": "天",
+      "month": "月"
+    },
+    "unlocks": "解锁内容",
+    "generateTitle": "生成替代文本",
+    "imageUrlLabel": "通过 URL 添加图片",
+    "imageUrlPlaceholder": "https://example.com/image.jpg",
+    "contextPlaceholder": "添加项目、页面或编辑上下文，以改进描述质量",
+    "noItems": "当前还没有排队的图片。请上传文件或在上方添加图片 URL。",
+    "noAltTextYet": "尚未生成替代文本。",
+    "urlImage": "URL 图片",
+    "metadataUploadOnly": "当前只有上传的文件支持带元数据下载",
+    "metadataDownloadTitle": "下载带嵌入元数据的文件",
+    "signedIn": "已登录",
+    "free": "免费",
+    "paid": "付费套餐",
+    "trial": "试用",
+    "trialDaysLeft": "试用 · 剩余 {days} 天",
+    "status": {
+      "queued": "排队中",
+      "ready": "就绪",
+      "failed": "失败"
+    },
+    "messages": {
+      "invalidImageUrl": "请输入有效的图片 URL（http/https）。",
+      "webPlanRequired": "你当前的套餐不包含网页端生成。请在下方选择支持网页端的套餐。",
+      "billingUpdated": "账单已更新。你的账户状态已刷新。",
+      "billingCancelled": "结账已取消。未应用任何账单变更。",
+      "downloadedMetadata": "已下载并附带元数据。",
+      "chooseSubscription": "请在下方选择套餐以开始你的首次订阅。",
+      "currentPlan": "{title} 已经是你当前的套餐。",
+      "comingSoonPlan": "{title} 已显示在目录中，但暂未开放自助购买。"
+    },
+    "disabled": {
+      "loading": "正在加载会话…",
+      "signedOut": "登录后即可开始生成替代文本。",
+      "missingEntitlement": "你当前的权限不包含网页端生成。"
+    }
+  },
+  "auth": {
+    "title": "正在为你登录…",
+    "body": "正在完成账户认证。"
+  },
+  "billing": {
+    "successTitle": "正在刷新你的账户…",
+    "successBody": "正在返回应用并重新加载你最新的套餐和权限状态。",
+    "cancelTitle": "正在返回应用…",
+    "cancelBody": "未应用任何账单变更。"
+  }
+}
