@@ -18,6 +18,9 @@
     "returnToApp": "Retour à l’app",
     "refreshStatus": "Actualiser le statut",
     "manageSwitchPlan": "Gérer / changer d’offre",
+    "manageBilling": "Gérer la facturation",
+    "changePlan": "Passer à une autre offre",
+    "resolveBilling": "Régler la facturation",
     "clear": "Effacer",
     "copy": "Copier",
     "generate": "Générer",
@@ -30,12 +33,20 @@
     "optionalContext": "Contexte facultatif",
     "comingSoon": "Bientôt disponible",
     "current": "Actuel",
+    "recommended": "Recommandé",
     "bundle": "Pack",
     "singleProduct": "Produit unique",
     "signInToChoose": "Connectez-vous pour choisir",
     "manageSwitch": "Gérer / changer",
     "choosePlan": "Choisir l’offre",
     "startTrial": "Commencer l’essai",
+    "upgrade": "Mettre à niveau",
+    "switchPlan": "Changer d’offre",
+    "keep": "Vous conservez",
+    "gain": "Vous gagnez",
+    "lose": "Vous perdez",
+    "close": "Fermer",
+    "cancel": "Annuler",
     "copiedToClipboard": "Copié dans le presse-papiers."
   },
   "seo": {
@@ -146,7 +157,9 @@
     "recentResults": "Résultats récents",
     "noRecentResults": "Aucune génération récente pour le moment.",
     "plansTitle": "Offres",
-    "plansSubtitle": "Achetez le produit dont vous avez besoin maintenant ou utilisez All Access pour débloquer tous les clients avec un seul compte.",
+    "plansSubtitle": "Choisissez l’offre qui correspond à votre façon de travailler. All Access conserve votre accès actuel et débloque tous les clients avec un seul abonnement.",
+    "roadmapTitle": "Bientôt disponible",
+    "roadmapSubtitle": "Ces produits restent visibles pour montrer la feuille de route, mais ils ne sont pas encore disponibles en achat autonome.",
     "planDescriptions": {
       "plan_web": "Imports, génération par URL, téléchargement avec métadonnées et historique récent dans l’app web.",
       "plan_chrome": "Génération au clic droit, collecte d’images de page et flux pleine page dans l’extension.",
@@ -161,10 +174,73 @@
       "plan_wordpress": "WordPress",
       "plan_all_access": "Accès complet"
     },
+    "planBestFor": {
+      "plan_web": "Importer et générer du texte alternatif dans l’app web.",
+      "plan_chrome": "Utiliser la génération au clic droit et à l’échelle de la page dans Chrome.",
+      "plan_all_access": "Conserver votre accès actuel et débloquer tous les clients avec un seul compte."
+    },
     "usage": {
       "hour": "Heure",
       "day": "Jour",
       "month": "Mois"
+    },
+    "summary": {
+      "currentSubscriptionFree": "Abonnement actuel : Gratuit",
+      "currentSubscriptionTrial": "Abonnement actuel : essai {title}",
+      "currentSubscriptionPaid": "Abonnement actuel : {title}",
+      "currentSubscriptionIssue": "Abonnement actuel : {title} (problème de paiement)",
+      "trialEnds": "Fin de l’essai : {date}",
+      "nextRenewal": "Prochain renouvellement : {date}",
+      "includedToday": "Inclus aujourd’hui : {items}",
+      "missingForApp": "Manque pour cette app : {items}",
+      "webGeneration": "Génération web",
+      "recommendedNextStep": "Étape recommandée : {title}",
+      "keeps": "Conserve : {items}",
+      "adds": "Ajoute : {items}"
+    },
+    "compare": {
+      "header": "Comparer",
+      "bestFor": "Idéal pour",
+      "includes": "Comprend",
+      "effect": "Effet sur votre accès actuel",
+      "action": "Action",
+      "effectCurrent": "Vous avez déjà cette offre.",
+      "effectKeepAdd": "Conserve votre accès actuel et ajoute {gains}.",
+      "effectReplace": "Remplace l’accès à {loses}.",
+      "effectKeep": "Conserve votre accès actuel."
+    },
+    "billing": {
+      "unavailablePrice": "Indisponible",
+      "noChargeToday": "Aucun frais aujourd’hui",
+      "monthShort": "mois",
+      "yearShort": "an",
+      "everyInterval": "{amount} tous les {count} {interval}"
+    },
+    "actions": {
+      "currentPlan": "Offre actuelle",
+      "startTrialFor": "Commencer l’essai pour {title}",
+      "choosePlan": "Choisir {title}",
+      "upgradeTo": "Passer à {title}",
+      "switchToOnly": "Passer uniquement à {title}",
+      "changeTo": "Changer pour {title}"
+    },
+    "modal": {
+      "loading": "Chargement des détails de l’offre…",
+      "resolveBillingTitle": "Réglez la facturation avant de changer d’offre",
+      "checkoutTitle": "Vérifier {title}",
+      "switchTitle": "Passer à {title}",
+      "upgradeTitle": "Passer à {title}",
+      "switchSubtitle": "Ce changement d’offre remplace une partie de votre accès actuel.",
+      "upgradeSubtitle": "Vérifiez ce qui change avant de confirmer cette mise à jour d’offre.",
+      "currentPlan": "Offre actuelle",
+      "targetPlan": "Offre cible",
+      "none": "Rien",
+      "priceToday": "Prix aujourd’hui",
+      "nextRenewal": "Prochain renouvellement",
+      "trialContinues": "Votre essai actuel continue jusqu’au {date}.",
+      "replacementWarning": "Changer maintenant supprime l’accès à {items}.",
+      "billingResolutionRequired": "Vous devez d’abord régler un problème de paiement avant de changer d’offre.",
+      "continueToCheckout": "Continuer vers le paiement"
     },
     "unlocks": "Débloque",
     "generateTitle": "Générer du texte alternatif",
@@ -194,7 +270,9 @@
       "downloadedMetadata": "Téléchargé avec les métadonnées.",
       "chooseSubscription": "Choisissez ci-dessous une offre pour démarrer votre premier abonnement.",
       "currentPlan": "{title} est déjà votre offre actuelle.",
-      "comingSoonPlan": "{title} apparaît dans le catalogue, mais n’est pas encore disponible en achat autonome."
+      "comingSoonPlan": "{title} apparaît dans le catalogue, mais n’est pas encore disponible en achat autonome.",
+      "planChanged": "{title} est maintenant actif sur votre compte.",
+      "planSwitched": "Votre abonnement a été remplacé par {title}."
     },
     "disabled": {
       "loading": "Chargement de la session…",

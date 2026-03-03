@@ -18,6 +18,9 @@
     "returnToApp": "返回应用",
     "refreshStatus": "刷新状态",
     "manageSwitchPlan": "管理 / 切换套餐",
+    "manageBilling": "管理账单",
+    "changePlan": "更换其他套餐",
+    "resolveBilling": "处理账单问题",
     "clear": "清除",
     "copy": "复制",
     "generate": "生成",
@@ -30,12 +33,20 @@
     "optionalContext": "可选上下文",
     "comingSoon": "即将推出",
     "current": "当前",
+    "recommended": "推荐",
     "bundle": "组合包",
     "singleProduct": "单独产品",
     "signInToChoose": "登录后选择",
     "manageSwitch": "管理 / 切换",
     "choosePlan": "选择套餐",
     "startTrial": "开始试用",
+    "upgrade": "升级",
+    "switchPlan": "切换套餐",
+    "keep": "你保留",
+    "gain": "你新增",
+    "lose": "你失去",
+    "close": "关闭",
+    "cancel": "取消",
     "copiedToClipboard": "已复制到剪贴板。"
   },
   "seo": {
@@ -146,7 +157,9 @@
     "recentResults": "最近结果",
     "noRecentResults": "暂时还没有最近生成记录。",
     "plansTitle": "套餐",
-    "plansSubtitle": "现在就购买你需要的产品，或使用 All Access 通过一个账户解锁所有端。",
+    "plansSubtitle": "选择最符合你工作方式的套餐。All Access 会保留你当前的访问权限，并通过一个订阅解锁所有端。",
+    "roadmapTitle": "即将推出",
+    "roadmapSubtitle": "这些产品会继续显示，方便你了解路线图，但暂时还不能自助购买。",
     "planDescriptions": {
       "plan_web": "支持上传、URL 生成、元数据下载以及网页应用中的最近历史记录。",
       "plan_chrome": "支持右键生成、页面图片收集以及扩展中的整页工作流。",
@@ -161,10 +174,73 @@
       "plan_wordpress": "WordPress",
       "plan_all_access": "全量访问"
     },
+    "planBestFor": {
+      "plan_web": "在网页应用中上传并生成替代文本。",
+      "plan_chrome": "在 Chrome 中使用整页和右键生成功能。",
+      "plan_all_access": "使用一个账户保留当前访问权限并解锁所有端。"
+    },
     "usage": {
       "hour": "小时",
       "day": "天",
       "month": "月"
+    },
+    "summary": {
+      "currentSubscriptionFree": "当前订阅：免费",
+      "currentSubscriptionTrial": "当前订阅：{title} 试用",
+      "currentSubscriptionPaid": "当前订阅：{title}",
+      "currentSubscriptionIssue": "当前订阅：{title}（支付问题）",
+      "trialEnds": "试用结束时间：{date}",
+      "nextRenewal": "下次续费：{date}",
+      "includedToday": "今日已包含：{items}",
+      "missingForApp": "此应用尚缺：{items}",
+      "webGeneration": "网页端生成",
+      "recommendedNextStep": "推荐下一步：{title}",
+      "keeps": "保留：{items}",
+      "adds": "新增：{items}"
+    },
+    "compare": {
+      "header": "比较",
+      "bestFor": "最适合",
+      "includes": "包含",
+      "effect": "对当前访问权限的影响",
+      "action": "操作",
+      "effectCurrent": "你已拥有此套餐。",
+      "effectKeepAdd": "保留你当前的访问权限，并新增 {gains}。",
+      "effectReplace": "将替换对 {loses} 的访问权限。",
+      "effectKeep": "保留你当前的访问权限。"
+    },
+    "billing": {
+      "unavailablePrice": "暂不可用",
+      "noChargeToday": "今天不收费",
+      "monthShort": "个月",
+      "yearShort": "年",
+      "everyInterval": "{amount} 每 {count} {interval}"
+    },
+    "actions": {
+      "currentPlan": "当前套餐",
+      "startTrialFor": "开始试用 {title}",
+      "choosePlan": "选择 {title}",
+      "upgradeTo": "升级到 {title}",
+      "switchToOnly": "仅切换到 {title}",
+      "changeTo": "更换为 {title}"
+    },
+    "modal": {
+      "loading": "正在加载套餐详情…",
+      "resolveBillingTitle": "先处理账单问题，再更换套餐",
+      "checkoutTitle": "确认 {title}",
+      "switchTitle": "切换到 {title}",
+      "upgradeTitle": "升级到 {title}",
+      "switchSubtitle": "此套餐变更会替换你当前的部分访问权限。",
+      "upgradeSubtitle": "确认套餐更新前，请先查看会发生哪些变化。",
+      "currentPlan": "当前套餐",
+      "targetPlan": "目标套餐",
+      "none": "无",
+      "priceToday": "今日价格",
+      "nextRenewal": "下次续费",
+      "trialContinues": "你当前的试用会持续到 {date}。",
+      "replacementWarning": "现在切换将移除你对 {items} 的访问权限。",
+      "billingResolutionRequired": "在更换套餐之前，你需要先处理支付问题。",
+      "continueToCheckout": "继续结账"
     },
     "unlocks": "解锁内容",
     "generateTitle": "生成替代文本",
@@ -194,7 +270,9 @@
       "downloadedMetadata": "已下载并附带元数据。",
       "chooseSubscription": "请在下方选择套餐以开始你的首次订阅。",
       "currentPlan": "{title} 已经是你当前的套餐。",
-      "comingSoonPlan": "{title} 已显示在目录中，但暂未开放自助购买。"
+      "comingSoonPlan": "{title} 已显示在目录中，但暂未开放自助购买。",
+      "planChanged": "{title} 已在你的账户中生效。",
+      "planSwitched": "你的订阅已切换为 {title}。"
     },
     "disabled": {
       "loading": "正在加载会话…",

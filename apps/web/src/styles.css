@@ -545,6 +545,119 @@ select {
   color: var(--ink-soft);
 }
 
+.scope-pill-danger {
+  background: #fff1f2;
+  color: #9f1239;
+  border-color: #fecdd3;
+}
+
+.billing-summary-panel {
+  gap: 14px;
+}
+
+.billing-summary-line {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.billing-summary-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.summary-label {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.compare-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.compare-table {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.compare-table th,
+.compare-table td {
+  border: 1px solid var(--line);
+  padding: 14px 16px;
+  vertical-align: top;
+  text-align: left;
+  background: #fff;
+}
+
+.compare-table thead th {
+  background: linear-gradient(180deg, #ffffff, #f6faff);
+}
+
+.compare-table th:first-child,
+.compare-table td:first-child {
+  width: 220px;
+}
+
+.compare-head {
+  min-width: 220px;
+}
+
+.compare-head-current {
+  background: linear-gradient(180deg, #f7fff9, #effcf3) !important;
+}
+
+.compare-plan-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.compare-price {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.5rem;
+  line-height: 1.05;
+}
+
+.compare-effect {
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: var(--ok-bg);
+  color: var(--ok-fg);
+  border: 1px solid #86efac;
+}
+
+.compare-effect-warning {
+  background: var(--warn-bg);
+  color: var(--warn-fg);
+  border-color: #fdba74;
+}
+
+.roadmap-section {
+  margin-top: 6px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.roadmap-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.roadmap-card {
+  opacity: 0.9;
+  box-shadow: none;
+}
+
 .catalog-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -571,6 +684,61 @@ select {
   background: linear-gradient(180deg, #ffffff, #f8fafc);
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(11, 27, 68, 0.44);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal-card {
+  width: min(760px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: 0 24px 70px rgba(11, 27, 68, 0.22);
+  padding: 22px;
+}
+
+.modal-card-warning {
+  border-color: #fdba74;
+}
+
+.modal-plan-grid,
+.modal-pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.modal-scope-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.modal-plan-card,
+.modal-scope-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+  background: var(--surface-2);
+}
+
+.modal-actions {
+  justify-content: flex-end;
+}
+
 .center-card {
   width: min(680px, calc(100% - 30px));
   margin: 80px auto;
@@ -585,7 +753,11 @@ select {
   .hero-grid,
   .app-grid,
   .catalog-grid,
+  .roadmap-grid,
   .pricing-grid,
+  .modal-plan-grid,
+  .modal-pricing-grid,
+  .modal-scope-grid,
   .grid-3 {
     grid-template-columns: 1fr;
   }
@@ -601,5 +773,14 @@ select {
 
   .locale-select {
     min-width: 100%;
+  }
+
+  .compare-table {
+    min-width: 720px;
+  }
+
+  .modal-backdrop {
+    align-items: flex-start;
+    padding: 16px;
   }
 }

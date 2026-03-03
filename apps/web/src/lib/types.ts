@@ -6,6 +6,8 @@ export type PlanCode =
   | 'plan_shopify'
   | 'plan_wordpress'
   | 'plan_all_access';
+export type ChangeMode = 'upgrade' | 'switch' | 'downgrade';
+export type ActionKind = 'current' | 'checkout' | 'change_plan' | 'unavailable';
 
 export interface EntitlementMatrix {
   all: boolean;
@@ -15,6 +17,19 @@ export interface EntitlementMatrix {
   wordpress: boolean;
 }
 
+export interface BillingPrice {
+  unitAmount: number;
+  currency: string;
+  interval: 'month' | 'year';
+  intervalCount: number;
+}
+
+export interface BillingIssueSummary {
+  kind: 'past_due' | 'payment_method_required';
+  title: string;
+  detail: string;
+}
+
 export interface BillingCatalogEntry {
   planCode: PlanCode;
   title: string;
@@ -22,6 +37,13 @@ export interface BillingCatalogEntry {
   unlockedScopes: Array<ClientScope | 'all'>;
   purchaseEnabled: boolean;
   current: boolean;
+  price: BillingPrice | null;
+  recommended: boolean;
+  preservesCurrentAccess: boolean;
+  gainsScopes: ClientScope[];
+  losesScopes: ClientScope[];
+  actionKind: ActionKind;
+  changeMode: ChangeMode | null;
 }
 
 export interface UsageSnapshot {
@@ -45,6 +67,7 @@ export interface SubscriptionStatus {
   providerPortalUrl?: string | null;
   hasStripeCustomer?: boolean;
   trialEligible?: boolean;
+  billingIssue?: BillingIssueSummary | null;
   entitlements?: Partial<EntitlementMatrix>;
   limits?: UsageLimits;
   usage?: UsageSnapshot;
@@ -52,6 +75,25 @@ export interface SubscriptionStatus {
   displayName?: string;
   email?: string;
   avatarUrl?: string | null;
+}
+
+export interface PlanChangePreview {
+  currentPlanCode: PlanCode | null;
+  targetPlanCode: PlanCode;
+  mode: ChangeMode;
+  preservesTrialUntil: string | null;
+  immediateCharge: {
+    unitAmount: number;
+    currency: string;
+  } | null;
+  nextRenewal: {
+    unitAmount: number;
+    currency: string;
+    date: string | null;
+  } | null;
+  gainsScopes: ClientScope[];
+  losesScopes: ClientScope[];
+  requiresBillingResolution: boolean;
 }
 
 export interface AuthState {

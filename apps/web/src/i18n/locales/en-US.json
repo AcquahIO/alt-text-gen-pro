@@ -18,6 +18,9 @@
     "returnToApp": "Return to app",
     "refreshStatus": "Refresh status",
     "manageSwitchPlan": "Manage / switch plan",
+    "manageBilling": "Manage billing",
+    "changePlan": "Change to another plan",
+    "resolveBilling": "Resolve billing",
     "clear": "Clear",
     "copy": "Copy",
     "generate": "Generate",
@@ -30,12 +33,20 @@
     "optionalContext": "Optional context",
     "comingSoon": "Coming soon",
     "current": "Current",
+    "recommended": "Recommended",
     "bundle": "Bundle",
     "singleProduct": "Single product",
     "signInToChoose": "Sign in to choose",
     "manageSwitch": "Manage / switch",
     "choosePlan": "Choose plan",
     "startTrial": "Start trial",
+    "upgrade": "Upgrade",
+    "switchPlan": "Switch plan",
+    "keep": "You keep",
+    "gain": "You gain",
+    "lose": "You lose",
+    "close": "Close",
+    "cancel": "Cancel",
     "copiedToClipboard": "Copied to clipboard."
   },
   "seo": {
@@ -146,7 +157,9 @@
     "recentResults": "Recent results",
     "noRecentResults": "No recent generations yet.",
     "plansTitle": "Plans",
-    "plansSubtitle": "Buy the product you need now, or use All Access to unlock every client with one account.",
+    "plansSubtitle": "Choose the plan that matches how you work. All Access keeps your current product access and unlocks every client with one subscription.",
+    "roadmapTitle": "Coming soon",
+    "roadmapSubtitle": "These products stay visible so you can see the roadmap, but they are not available for self-serve purchase yet.",
     "planDescriptions": {
       "plan_web": "Uploads, URL-based generation, metadata download, and recent history in the web app.",
       "plan_chrome": "Right-click generation, page-level image collection, and the extension full-page workflow.",
@@ -161,10 +174,73 @@
       "plan_wordpress": "WordPress",
       "plan_all_access": "All Access"
     },
+    "planBestFor": {
+      "plan_web": "Upload and generate alt text inside the web app.",
+      "plan_chrome": "Use page-level and right-click generation in Chrome.",
+      "plan_all_access": "Keep current access and unlock every client with one account."
+    },
     "usage": {
       "hour": "Hour",
       "day": "Day",
       "month": "Month"
+    },
+    "summary": {
+      "currentSubscriptionFree": "Current subscription: Free",
+      "currentSubscriptionTrial": "Current subscription: {title} trial",
+      "currentSubscriptionPaid": "Current subscription: {title}",
+      "currentSubscriptionIssue": "Current subscription: {title} (payment issue)",
+      "trialEnds": "Trial ends: {date}",
+      "nextRenewal": "Next renewal: {date}",
+      "includedToday": "Included today: {items}",
+      "missingForApp": "Missing for this app: {items}",
+      "webGeneration": "Web generation",
+      "recommendedNextStep": "Recommended next step: {title}",
+      "keeps": "Keeps: {items}",
+      "adds": "Adds: {items}"
+    },
+    "compare": {
+      "header": "Compare",
+      "bestFor": "Best for",
+      "includes": "Includes",
+      "effect": "Effect on current access",
+      "action": "Action",
+      "effectCurrent": "You already have this plan.",
+      "effectKeepAdd": "Keeps your current access and adds {gains}.",
+      "effectReplace": "Replaces access to {loses}.",
+      "effectKeep": "Keeps your current access."
+    },
+    "billing": {
+      "unavailablePrice": "Unavailable",
+      "noChargeToday": "No charge today",
+      "monthShort": "month",
+      "yearShort": "year",
+      "everyInterval": "{amount} every {count} {interval}"
+    },
+    "actions": {
+      "currentPlan": "Current plan",
+      "startTrialFor": "Start trial for {title}",
+      "choosePlan": "Choose {title}",
+      "upgradeTo": "Upgrade to {title}",
+      "switchToOnly": "Switch to {title} only",
+      "changeTo": "Change to {title}"
+    },
+    "modal": {
+      "loading": "Loading plan details…",
+      "resolveBillingTitle": "Resolve billing before changing plan",
+      "checkoutTitle": "Review {title}",
+      "switchTitle": "Switch to {title}",
+      "upgradeTitle": "Upgrade to {title}",
+      "switchSubtitle": "This plan change replaces some of your current access.",
+      "upgradeSubtitle": "Review what changes before confirming this plan update.",
+      "currentPlan": "Current plan",
+      "targetPlan": "Target plan",
+      "none": "Nothing",
+      "priceToday": "Price today",
+      "nextRenewal": "Next renewal",
+      "trialContinues": "Your current trial continues until {date}.",
+      "replacementWarning": "Switching now removes access to {items}.",
+      "billingResolutionRequired": "You have a payment issue to resolve before changing plans.",
+      "continueToCheckout": "Continue to checkout"
     },
     "unlocks": "Unlocks",
     "generateTitle": "Generate Alt Text",
@@ -194,7 +270,9 @@
       "downloadedMetadata": "Downloaded with metadata.",
       "chooseSubscription": "Choose a plan below to start your first subscription.",
       "currentPlan": "{title} is already your current plan.",
-      "comingSoonPlan": "{title} is visible in the catalog but not available for self-serve purchase yet."
+      "comingSoonPlan": "{title} is visible in the catalog but not available for self-serve purchase yet.",
+      "planChanged": "{title} is now active on your account.",
+      "planSwitched": "Your subscription has been switched to {title}."
     },
     "disabled": {
       "loading": "Loading session…",

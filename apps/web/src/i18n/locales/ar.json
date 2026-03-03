@@ -18,6 +18,9 @@
     "returnToApp": "العودة إلى التطبيق",
     "refreshStatus": "تحديث الحالة",
     "manageSwitchPlan": "إدارة / تغيير الخطة",
+    "manageBilling": "إدارة الفوترة",
+    "changePlan": "التغيير إلى خطة أخرى",
+    "resolveBilling": "حل مشكلة الفوترة",
     "clear": "مسح",
     "copy": "نسخ",
     "generate": "توليد",
@@ -30,12 +33,20 @@
     "optionalContext": "سياق اختياري",
     "comingSoon": "قريباً",
     "current": "الحالية",
+    "recommended": "موصى به",
     "bundle": "حزمة",
     "singleProduct": "منتج منفرد",
     "signInToChoose": "سجّل الدخول للاختيار",
     "manageSwitch": "إدارة / تغيير",
     "choosePlan": "اختر الخطة",
     "startTrial": "ابدأ التجربة",
+    "upgrade": "ترقية",
+    "switchPlan": "تبديل الخطة",
+    "keep": "ستحتفظ بـ",
+    "gain": "ستكسب",
+    "lose": "ستفقد",
+    "close": "إغلاق",
+    "cancel": "إلغاء",
     "copiedToClipboard": "تم النسخ إلى الحافظة."
   },
   "seo": {
@@ -146,7 +157,9 @@
     "recentResults": "النتائج الأخيرة",
     "noRecentResults": "لا توجد عمليات توليد حديثة بعد.",
     "plansTitle": "الخطط",
-    "plansSubtitle": "اشتر المنتج الذي تحتاجه الآن، أو استخدم الوصول الكامل لتفعيل جميع العملاء بحساب واحد.",
+    "plansSubtitle": "اختر الخطة التي تناسب طريقة عملك. يحافظ All Access على وصولك الحالي ويفعّل جميع العملاء باشتراك واحد.",
+    "roadmapTitle": "قريباً",
+    "roadmapSubtitle": "تبقى هذه المنتجات ظاهرة لتوضيح خارطة الطريق، لكنها ليست متاحة بعد للشراء الذاتي.",
     "planDescriptions": {
       "plan_web": "رفع ملفات، وتوليد عبر الروابط، وتنزيل مع بيانات وصفية، وسجل حديث داخل تطبيق الويب.",
       "plan_chrome": "توليد بالنقر الأيمن، وجمع صور الصفحة، وسير عمل الصفحة الكاملة في الإضافة.",
@@ -161,10 +174,73 @@
       "plan_wordpress": "WordPress",
       "plan_all_access": "الوصول الكامل"
     },
+    "planBestFor": {
+      "plan_web": "رفع الملفات وإنشاء النص البديل داخل تطبيق الويب.",
+      "plan_chrome": "استخدام التوليد على مستوى الصفحة وبالنقر الأيمن في Chrome.",
+      "plan_all_access": "الحفاظ على وصولك الحالي وتفعيل جميع العملاء بحساب واحد."
+    },
     "usage": {
       "hour": "الساعة",
       "day": "اليوم",
       "month": "الشهر"
+    },
+    "summary": {
+      "currentSubscriptionFree": "الاشتراك الحالي: مجاني",
+      "currentSubscriptionTrial": "الاشتراك الحالي: تجربة {title}",
+      "currentSubscriptionPaid": "الاشتراك الحالي: {title}",
+      "currentSubscriptionIssue": "الاشتراك الحالي: {title} (مشكلة في الدفع)",
+      "trialEnds": "تنتهي التجربة في: {date}",
+      "nextRenewal": "التجديد التالي: {date}",
+      "includedToday": "المتاح لك اليوم: {items}",
+      "missingForApp": "المفقود لهذا التطبيق: {items}",
+      "webGeneration": "التوليد على الويب",
+      "recommendedNextStep": "الخطوة المقترحة التالية: {title}",
+      "keeps": "يحتفظ بـ: {items}",
+      "adds": "يضيف: {items}"
+    },
+    "compare": {
+      "header": "المقارنة",
+      "bestFor": "الأنسب لـ",
+      "includes": "يتضمن",
+      "effect": "الأثر على الوصول الحالي",
+      "action": "الإجراء",
+      "effectCurrent": "لديك هذه الخطة بالفعل.",
+      "effectKeepAdd": "يحتفظ بوصولك الحالي ويضيف {gains}.",
+      "effectReplace": "يستبدل الوصول إلى {loses}.",
+      "effectKeep": "يحتفظ بوصولك الحالي."
+    },
+    "billing": {
+      "unavailablePrice": "غير متاح",
+      "noChargeToday": "لا توجد رسوم اليوم",
+      "monthShort": "شهر",
+      "yearShort": "سنة",
+      "everyInterval": "{amount} كل {count} {interval}"
+    },
+    "actions": {
+      "currentPlan": "الخطة الحالية",
+      "startTrialFor": "ابدأ تجربة {title}",
+      "choosePlan": "اختر {title}",
+      "upgradeTo": "رقِّ إلى {title}",
+      "switchToOnly": "بدّل إلى {title} فقط",
+      "changeTo": "غيّر إلى {title}"
+    },
+    "modal": {
+      "loading": "جارٍ تحميل تفاصيل الخطة…",
+      "resolveBillingTitle": "عالج مشكلة الفوترة قبل تغيير الخطة",
+      "checkoutTitle": "راجع {title}",
+      "switchTitle": "التبديل إلى {title}",
+      "upgradeTitle": "الترقية إلى {title}",
+      "switchSubtitle": "سيستبدل هذا التغيير بعض صلاحياتك الحالية.",
+      "upgradeSubtitle": "راجع ما سيتغير قبل تأكيد تحديث الخطة.",
+      "currentPlan": "الخطة الحالية",
+      "targetPlan": "الخطة المطلوبة",
+      "none": "لا شيء",
+      "priceToday": "السعر اليوم",
+      "nextRenewal": "التجديد التالي",
+      "trialContinues": "تستمر تجربتك الحالية حتى {date}.",
+      "replacementWarning": "سيؤدي التبديل الآن إلى إزالة الوصول إلى {items}.",
+      "billingResolutionRequired": "لديك مشكلة دفع يجب حلها قبل تغيير الخطة.",
+      "continueToCheckout": "المتابعة إلى الدفع"
     },
     "unlocks": "يفعّل",
     "generateTitle": "إنشاء النص البديل",
@@ -194,7 +270,9 @@
       "downloadedMetadata": "تم التنزيل مع البيانات الوصفية.",
       "chooseSubscription": "اختر أدناه خطة لبدء أول اشتراك لك.",
       "currentPlan": "الخطة {title} هي خطتك الحالية بالفعل.",
-      "comingSoonPlan": "تظهر {title} في الكتالوج، لكنها غير متاحة حالياً للشراء الذاتي."
+      "comingSoonPlan": "تظهر {title} في الكتالوج، لكنها غير متاحة حالياً للشراء الذاتي.",
+      "planChanged": "أصبحت {title} مفعلة الآن على حسابك.",
+      "planSwitched": "تم تبديل اشتراكك إلى {title}."
     },
     "disabled": {
       "loading": "جارٍ تحميل الجلسة…",

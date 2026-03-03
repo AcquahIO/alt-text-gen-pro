@@ -1,4 +1,4 @@
-import { PlanCode, QueueItem, SubscriptionStatus } from '@/lib/types';
+import { PlanChangePreview, PlanCode, QueueItem, SubscriptionStatus } from '@/lib/types';
 
 type BillingClient = 'extension' | 'web';
 
@@ -12,6 +12,10 @@ interface CheckoutPayload {
 interface PortalPayload {
   client?: BillingClient;
   returnOrigin?: string;
+}
+
+interface PlanChangePayload {
+  planCode: PlanCode;
 }
 
 interface UrlResponse {
@@ -65,6 +69,20 @@ export async function createPortalSession(apiBaseUrl: string, token: string, pay
     body: JSON.stringify(payload),
   });
   return response.url;
+}
+
+export async function previewPlanChange(apiBaseUrl: string, token: string, payload: PlanChangePayload): Promise<PlanChangePreview> {
+  return requestWithAuth<PlanChangePreview>(apiBaseUrl, token, '/api/plan-change-preview', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function changePlan(apiBaseUrl: string, token: string, payload: PlanChangePayload): Promise<SubscriptionStatus> {
+  return requestWithAuth<SubscriptionStatus>(apiBaseUrl, token, '/api/plan-change', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function generateAltText(
