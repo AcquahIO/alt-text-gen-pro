@@ -193,11 +193,11 @@ export function UploadHeader({
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <Label htmlFor="full-context" className="text-sm">
-            Optional context
+            SEO focus and page context
           </Label>
           <Textarea
             id="full-context"
-            placeholder="Project/site context to inform descriptions (optional)"
+            placeholder="Example: Product: oak dining chair. Focus keyword: solid oak dining chair. Brand: North & Pine."
             value={context}
             onChange={(e) => onContextChange(e.target.value)}
             style={{

@@ -8,7 +8,7 @@ const appRoot = path.resolve(__dirname, '..');
 const distDir = path.join(appRoot, 'dist');
 const localeDir = path.join(appRoot, 'src', 'i18n', 'locales');
 
-const SUPPORTED_LOCALES = ['en-GB', 'en-US', 'es-ES', 'fr-FR', 'de-DE', 'ar', 'zh-Hans'];
+const SUPPORTED_LOCALES = ['en-GB', 'en-US'];
 const DEFAULT_LOCALE = 'en-GB';
 const ROUTES = [
   { id: 'landing', path: '/', indexable: true },
@@ -20,17 +20,12 @@ const ROUTES = [
 const OG_LOCALE_MAP = {
   'en-GB': 'en_GB',
   'en-US': 'en_US',
-  'es-ES': 'es_ES',
-  'fr-FR': 'fr_FR',
-  'de-DE': 'de_DE',
-  ar: 'ar_AR',
-  'zh-Hans': 'zh_CN',
 };
 
 const appOrigin = normalizeOrigin(process.env.VITE_APP_ORIGIN) ?? 'https://your-domain.com';
 const isStaging = process.env.VITE_STAGING === 'true';
 const channelLinks = {
-  chrome: process.env.VITE_CHROME_LINK || 'https://chrome.google.com/webstore',
+  chrome: process.env.VITE_CHROME_LINK || '',
   shopify: process.env.VITE_SHOPIFY_LINK || '#shopify-waitlist',
   wordpress: process.env.VITE_WORDPRESS_LINK || '#wordpress-waitlist',
 };
@@ -107,9 +102,11 @@ function structuredData(locale, route, title, description, canonicalUrl) {
       url: canonicalUrl,
       description,
       offers: {
-        '@type': 'Offer',
-        price: '0',
+        '@type': 'AggregateOffer',
+        lowPrice: '10',
+        highPrice: '19',
         priceCurrency: 'USD',
+        offerCount: 3,
       },
     };
   }
@@ -149,124 +146,103 @@ function structuredData(locale, route, title, description, canonicalUrl) {
 
 function renderLanding(locale) {
   const appHref = localizedPath(locale, '/app');
+  const chromeHref = channelLinks.chrome || appHref;
 
   return `
-      <header class="site-header">
+      <header class="site-header landing-header">
         <div class="container header-inner">
           <a href="${escapeHtml(localizedPath(locale, '/'))}" class="brand">
             <span class="brand-mark">${escapeHtml(t(locale, 'brand.shortName'))}</span>
-            <span class="brand-text">
-              <span class="brand-title">${escapeHtml(t(locale, 'brand.name'))}</span>
-              <span class="brand-sub">${escapeHtml(t(locale, 'brand.tagline'))}</span>
-            </span>
+            <span class="brand-title">${escapeHtml(t(locale, 'brand.name'))}</span>
           </a>
           <div class="nav-actions">
-            <a href="${escapeHtml(appHref)}" class="btn btn-outline">${escapeHtml(t(locale, 'landing.nav.openApp'))}</a>
             <a href="${escapeHtml(appHref)}" class="btn btn-primary">${escapeHtml(t(locale, 'landing.nav.startGenerating'))}</a>
           </div>
         </div>
       </header>
       <main>
-        <section class="hero">
-          <div class="container hero-grid">
+        <section class="hero landing-hero">
+          <img class="hero-image" src="/assets/seo-alt-text-hero.jpg" alt="Light oak dining chair against a warm studio background" width="1536" height="1024" />
+          <div class="hero-scrim"></div>
+          <div class="container hero-content">
             <div class="hero-copy">
+              <span class="eyebrow">${escapeHtml(t(locale, 'brand.tagline'))}</span>
               <h1>${escapeHtml(t(locale, 'landing.hero.title'))}</h1>
               <p>${escapeHtml(t(locale, 'landing.hero.body'))}</p>
               <div class="hero-ctas">
-                <a href="${escapeHtml(appHref)}" class="btn btn-primary">${escapeHtml(t(locale, 'landing.hero.launchWebApp'))}</a>
-                <a href="#platforms" class="btn btn-outline">${escapeHtml(t(locale, 'landing.hero.explorePlatforms'))}</a>
+                <a href="${escapeHtml(appHref)}" class="btn btn-primary btn-large">${escapeHtml(t(locale, 'landing.hero.launchWebApp'))}</a>
+                <a href="${escapeHtml(chromeHref)}" class="btn btn-light btn-large">${escapeHtml(t(locale, 'channels.chrome.cta'))}</a>
               </div>
+              <small class="hero-note">${escapeHtml(t(locale, 'landing.kpis.info'))}</small>
             </div>
-            <div class="hero-panel">
-              <div class="hero-kpis">
-                <div class="hero-kpi">
-                  <strong>${escapeHtml(t(locale, 'landing.kpis.channelsTitle'))}</strong>
-                  <span>${escapeHtml(t(locale, 'landing.kpis.channelsBody'))}</span>
-                </div>
-                <div class="hero-kpi">
-                  <strong>${escapeHtml(t(locale, 'landing.kpis.accountTitle'))}</strong>
-                  <span>${escapeHtml(t(locale, 'landing.kpis.accountBody'))}</span>
-                </div>
-                <div class="hero-kpi">
-                  <strong>${escapeHtml(t(locale, 'landing.kpis.batchTitle'))}</strong>
-                  <span>${escapeHtml(t(locale, 'landing.kpis.batchBody'))}</span>
-                </div>
-              </div>
-              <div style="margin-top:12px" class="notice notice-info">${escapeHtml(t(locale, 'landing.kpis.info'))}</div>
+            <div class="hero-result">
+              <span>Generated example</span>
+              <strong>Light oak dining chair with curved backrest in a warm studio setting</strong>
             </div>
           </div>
         </section>
-        <section class="section">
+        <section class="section proof-strip">
+          <div class="container proof-grid">
+            <div><strong>${escapeHtml(t(locale, 'landing.kpis.channelsTitle'))}</strong><span>${escapeHtml(t(locale, 'landing.kpis.channelsBody'))}</span></div>
+            <div><strong>${escapeHtml(t(locale, 'landing.kpis.accountTitle'))}</strong><span>${escapeHtml(t(locale, 'landing.kpis.accountBody'))}</span></div>
+            <div><strong>${escapeHtml(t(locale, 'landing.kpis.batchTitle'))}</strong><span>${escapeHtml(t(locale, 'landing.kpis.batchBody'))}</span></div>
+          </div>
+        </section>
+        <section class="section workflow-section" id="workflow">
           <div class="container">
-            <h2>${escapeHtml(t(locale, 'landing.features.title'))}</h2>
-            <p class="section-sub">${escapeHtml(t(locale, 'landing.features.subtitle'))}</p>
-            <div class="grid-3">
-              <article class="card">
+            <div class="section-heading">
+              <span class="eyebrow">01 — ${escapeHtml(t(locale, 'landing.features.title'))}</span>
+              <h2>${escapeHtml(t(locale, 'landing.features.subtitle'))}</h2>
+            </div>
+            <div class="workflow-list">
+              <article><span>01</span>
                 <h3>${escapeHtml(t(locale, 'landing.features.contextTitle'))}</h3>
                 <p>${escapeHtml(t(locale, 'landing.features.contextBody'))}</p>
               </article>
-              <article class="card">
+              <article><span>02</span>
                 <h3>${escapeHtml(t(locale, 'landing.features.subscriptionsTitle'))}</h3>
                 <p>${escapeHtml(t(locale, 'landing.features.subscriptionsBody'))}</p>
               </article>
-              <article class="card">
+              <article><span>03</span>
                 <h3>${escapeHtml(t(locale, 'landing.features.metadataTitle'))}</h3>
                 <p>${escapeHtml(t(locale, 'landing.features.metadataBody'))}</p>
               </article>
             </div>
           </div>
         </section>
-        <section class="section" id="platforms">
-          <div class="container">
-            <h2>${escapeHtml(t(locale, 'landing.platforms.title'))}</h2>
-            <p class="section-sub">${escapeHtml(t(locale, 'landing.platforms.subtitle'))}</p>
-            <div class="grid-3">
-              ${['chrome', 'shopify', 'wordpress']
-                .map(
-                  (id) => `
-                    <article class="card channel-card">
-                      <div class="badge ${id === 'chrome' ? 'badge-live' : 'badge-waitlist'}">${escapeHtml(
-                        t(locale, id === 'chrome' ? 'channels.live' : 'channels.waitlist'),
-                      )}</div>
-                      <h3>${escapeHtml(channelLabel(locale, id, 'title'))}</h3>
-                      <p>${escapeHtml(channelLabel(locale, id, 'description'))}</p>
-                      <a href="${escapeHtml(channelLinks[id])}" class="btn btn-outline">${escapeHtml(channelLabel(locale, id, 'cta'))}</a>
-                    </article>
-                  `,
-                )
-                .join('')}
+        <section class="section product-depth">
+          <div class="container depth-grid">
+            <div class="depth-copy">
+              <span class="eyebrow">02 — ${escapeHtml(t(locale, 'landing.platforms.title'))}</span>
+              <h2>${escapeHtml(t(locale, 'landing.platforms.subtitle'))}</h2>
+              <p>${escapeHtml(channelLabel(locale, 'chrome', 'description'))}</p>
+              <a class="text-link" href="${escapeHtml(chromeHref)}">${escapeHtml(channelLabel(locale, 'chrome', 'cta'))} ↗</a>
             </div>
           </div>
         </section>
-        <section class="section" id="pricing">
+        <section class="section pricing-section" id="pricing">
           <div class="container">
-            <h2>${escapeHtml(t(locale, 'landing.pricing.title'))}</h2>
-            <p class="section-sub">${escapeHtml(t(locale, 'landing.pricing.subtitle'))}</p>
-            <div class="pricing-grid">
-              <article class="card">
-                <h3>${escapeHtml(t(locale, 'landing.pricing.freeTitle'))}</h3>
-                <div class="price">${escapeHtml(t(locale, 'landing.pricing.freePrice'))}</div>
-                <p>${escapeHtml(t(locale, 'landing.pricing.freeBody'))}</p>
+            <div class="section-heading"><span class="eyebrow">03 — ${escapeHtml(t(locale, 'landing.pricing.title'))}</span><h2>${escapeHtml(t(locale, 'landing.pricing.subtitle'))}</h2></div>
+            <div class="pricing-lines">
+              <article><div><h3>${escapeHtml(t(locale, 'landing.pricing.freeTitle'))}</h3><p>${escapeHtml(t(locale, 'landing.pricing.freeBody'))}</p></div>
+                <strong>${escapeHtml(t(locale, 'landing.pricing.freePrice'))}</strong>
                 <a href="${escapeHtml(appHref)}" class="btn btn-outline">${escapeHtml(t(locale, 'common.openApp'))}</a>
               </article>
-              <article class="card">
-                <h3>${escapeHtml(t(locale, 'landing.pricing.singleTitle'))}</h3>
-                <div class="price">${escapeHtml(t(locale, 'landing.pricing.singlePrice'))}</div>
-                <p>${escapeHtml(t(locale, 'landing.pricing.singleBody'))}</p>
+              <article class="pricing-featured"><div><h3>${escapeHtml(t(locale, 'landing.pricing.singleTitle'))}</h3><p>${escapeHtml(t(locale, 'landing.pricing.singleBody'))}</p></div>
+                <strong>${escapeHtml(t(locale, 'landing.pricing.singlePrice'))}</strong>
                 <a href="${escapeHtml(appHref)}" class="btn btn-primary">${escapeHtml(t(locale, 'landing.pricing.choosePlan'))}</a>
               </article>
-              <article class="card">
-                <h3>${escapeHtml(t(locale, 'landing.pricing.allTitle'))}</h3>
-                <div class="price">${escapeHtml(t(locale, 'landing.pricing.allPrice'))}</div>
-                <p>${escapeHtml(t(locale, 'landing.pricing.allBody'))}</p>
+              <article><div><h3>${escapeHtml(t(locale, 'landing.pricing.allTitle'))}</h3><p>${escapeHtml(t(locale, 'landing.pricing.allBody'))}</p></div>
+                <strong>${escapeHtml(t(locale, 'landing.pricing.allPrice'))}</strong>
                 <a href="${escapeHtml(appHref)}" class="btn btn-outline">${escapeHtml(t(locale, 'landing.pricing.comparePlans'))}</a>
               </article>
             </div>
           </div>
         </section>
+        <section class="final-cta"><div class="container final-cta-inner"><div><span class="eyebrow">${escapeHtml(t(locale, 'brand.name'))}</span><h2>${escapeHtml(t(locale, 'landing.hero.title'))}</h2></div><a href="${escapeHtml(appHref)}" class="btn btn-light btn-large">${escapeHtml(t(locale, 'landing.hero.launchWebApp'))}</a></div></section>
       </main>
-      <footer class="footer">
-        <div class="container">${escapeHtml(t(locale, 'brand.footer'))}</div>
+      <footer class="footer landing-footer">
+        <div class="container footer-inner"><div>${escapeHtml(t(locale, 'brand.footer'))}</div><nav><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="mailto:charles@acquah.io">Support</a></nav></div>
       </footer>
   `;
 }
@@ -342,10 +318,13 @@ function buildHeadExtras(locale, route) {
     <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:url" content="${escapeHtml(canonicalUrl)}" />
     <meta property="og:locale" content="${escapeHtml(OG_LOCALE_MAP[locale])}" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content="${escapeHtml(`${appOrigin}/assets/seo-alt-text-hero.jpg`)}" />
+    <meta property="og:image:alt" content="Light oak dining chair against a warm studio background" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(title)}" />
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:url" content="${escapeHtml(canonicalUrl)}" />
+    <meta name="twitter:image" content="${escapeHtml(`${appOrigin}/assets/seo-alt-text-hero.jpg`)}" />
     <script type="application/ld+json">${jsonLd}</script>
   `;
 }

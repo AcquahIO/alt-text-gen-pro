@@ -1,4 +1,4 @@
-export const SUPPORTED_LOCALES = ['en-GB', 'en-US', 'es-ES', 'fr-FR', 'de-DE', 'ar', 'zh-Hans'] as const;
+export const SUPPORTED_LOCALES = ['en-GB', 'en-US'] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = 'en-GB';
@@ -6,23 +6,13 @@ export const LANG_COOKIE_NAME = 'lang_pref';
 export const LOCALE_LABELS: Record<Locale, string> = {
   'en-GB': 'English (United Kingdom)',
   'en-US': 'English (United States)',
-  'es-ES': 'Español (España)',
-  'fr-FR': 'Français (France)',
-  'de-DE': 'Deutsch (Deutschland)',
-  ar: 'العربية',
-  'zh-Hans': '简体中文',
 };
 
-const RTL_LOCALES = new Set<Locale>(['ar']);
+const RTL_LOCALES = new Set<Locale>();
 const SUPPORTED_LOCALE_SET = new Set<string>(SUPPORTED_LOCALES);
 const OG_LOCALE_MAP: Record<Locale, string> = {
   'en-GB': 'en_GB',
   'en-US': 'en_US',
-  'es-ES': 'es_ES',
-  'fr-FR': 'fr_FR',
-  'de-DE': 'de_DE',
-  ar: 'ar_AR',
-  'zh-Hans': 'zh_CN',
 };
 
 export function isSupportedLocale(input: string | null | undefined): input is Locale {
@@ -37,13 +27,6 @@ export function normalizeLocale(input: string | null | undefined): Locale | null
   const normalized = raw.toLowerCase();
   if (normalized === 'en' || normalized === 'en-gb') return 'en-GB';
   if (normalized === 'en-us') return 'en-US';
-  if (normalized === 'es' || normalized === 'es-es') return 'es-ES';
-  if (normalized === 'fr' || normalized === 'fr-fr') return 'fr-FR';
-  if (normalized === 'de' || normalized === 'de-de') return 'de-DE';
-  if (normalized === 'ar' || normalized.startsWith('ar-')) return 'ar';
-  if (normalized === 'zh' || normalized === 'zh-cn' || normalized === 'zh-sg' || normalized === 'zh-hans') {
-    return 'zh-Hans';
-  }
   return null;
 }
 

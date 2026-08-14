@@ -10,25 +10,24 @@ export function LandingPage() {
   const { locale, t } = useI18n();
   const landingHref = buildRoutePath(locale, 'landing');
   const appHref = buildRoutePath(locale, 'app');
+  const chromeHref = CHANNEL_LINKS.find((channel) => channel.id === 'chrome')?.href || appHref;
 
   useSeo('landing');
 
   return (
     <>
-      <header className="site-header">
+      <header className="site-header landing-header">
         <div className="container header-inner">
-          <Link to={landingHref} className="brand">
+          <Link to={landingHref} className="brand" aria-label={t('brand.name')}>
             <span className="brand-mark">{t('brand.shortName')}</span>
-            <span className="brand-text">
-              <span className="brand-title">{t('brand.name')}</span>
-              <span className="brand-sub">{t('brand.tagline')}</span>
-            </span>
+            <span className="brand-title">{t('brand.name')}</span>
           </Link>
+          <nav className="landing-nav" aria-label="Primary navigation">
+            <a href="#workflow">{t('landing.features.title')}</a>
+            <a href="#pricing">{t('landing.pricing.title')}</a>
+          </nav>
           <div className="nav-actions">
             <LanguageSwitcher />
-            <Link to={appHref} className="btn btn-outline">
-              {t('landing.nav.openApp')}
-            </Link>
             <Link to={appHref} className="btn btn-primary">
               {t('landing.nav.startGenerating')}
             </Link>
@@ -37,62 +36,80 @@ export function LandingPage() {
       </header>
 
       <main>
-        <section className="hero">
-          <div className="container hero-grid">
-            <div className="hero-copy">
+        <section className="hero landing-hero">
+          <img
+            className="hero-image"
+            src="/assets/seo-alt-text-hero.jpg"
+            alt="Light oak dining chair against a warm studio background"
+            width="1536"
+            height="1024"
+            fetchPriority="high"
+          />
+          <div className="hero-scrim" />
+          <div className="container hero-content">
+            <div className="hero-copy hero-enter">
+              <span className="eyebrow">{t('brand.tagline')}</span>
               <h1>{t('landing.hero.title')}</h1>
               <p>{t('landing.hero.body')}</p>
               <div className="hero-ctas">
-                <Link to={appHref} className="btn btn-primary">
+                <Link to={appHref} className="btn btn-primary btn-large">
                   {t('landing.hero.launchWebApp')}
                 </Link>
-                <a href="#platforms" className="btn btn-outline">
-                  {t('landing.hero.explorePlatforms')}
+                <a href={chromeHref} className="btn btn-light btn-large">
+                  {t('channels.chrome.cta')}
                 </a>
               </div>
-              {IS_STAGING ? (
-                <div className="notice notice-warning" style={{ marginTop: 12 }}>
-                  {t('landing.hero.stagingNotice')}
-                </div>
-              ) : null}
+              <small className="hero-note">{t('landing.kpis.info')}</small>
+              {IS_STAGING ? <div className="notice notice-warning">{t('landing.hero.stagingNotice')}</div> : null}
             </div>
 
-            <div className="hero-panel">
-              <div className="hero-kpis">
-                <div className="hero-kpi">
-                  <strong>{t('landing.kpis.channelsTitle')}</strong>
-                  <span>{t('landing.kpis.channelsBody')}</span>
-                </div>
-                <div className="hero-kpi">
-                  <strong>{t('landing.kpis.accountTitle')}</strong>
-                  <span>{t('landing.kpis.accountBody')}</span>
-                </div>
-                <div className="hero-kpi">
-                  <strong>{t('landing.kpis.batchTitle')}</strong>
-                  <span>{t('landing.kpis.batchBody')}</span>
-                </div>
-              </div>
-              <div style={{ marginTop: 12 }} className="notice notice-info">
-                {t('landing.kpis.info')}
+            <div className="hero-result hero-enter-delay" aria-label="Generated alt text example">
+              <span>Generated example</span>
+              <strong>Light oak dining chair with curved backrest in a warm studio setting</strong>
+              <div className="result-meta">
+                <span>73 / 125</span>
+                <span>{t('app.status.ready')}</span>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="section">
+        <section className="section proof-strip" aria-label="Product highlights">
+          <div className="container proof-grid">
+            <div>
+              <strong>{t('landing.kpis.channelsTitle')}</strong>
+              <span>{t('landing.kpis.channelsBody')}</span>
+            </div>
+            <div>
+              <strong>{t('landing.kpis.accountTitle')}</strong>
+              <span>{t('landing.kpis.accountBody')}</span>
+            </div>
+            <div>
+              <strong>{t('landing.kpis.batchTitle')}</strong>
+              <span>{t('landing.kpis.batchBody')}</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="section workflow-section" id="workflow">
           <div className="container">
-            <h2>{t('landing.features.title')}</h2>
-            <p className="section-sub">{t('landing.features.subtitle')}</p>
-            <div className="grid-3">
-              <article className="card">
+            <div className="section-heading reveal-on-scroll">
+              <span className="eyebrow">01 — {t('landing.features.title')}</span>
+              <h2>{t('landing.features.subtitle')}</h2>
+            </div>
+            <div className="workflow-list">
+              <article>
+                <span>01</span>
                 <h3>{t('landing.features.contextTitle')}</h3>
                 <p>{t('landing.features.contextBody')}</p>
               </article>
-              <article className="card">
+              <article>
+                <span>02</span>
                 <h3>{t('landing.features.subscriptionsTitle')}</h3>
                 <p>{t('landing.features.subscriptionsBody')}</p>
               </article>
-              <article className="card">
+              <article>
+                <span>03</span>
                 <h3>{t('landing.features.metadataTitle')}</h3>
                 <p>{t('landing.features.metadataBody')}</p>
               </article>
@@ -100,67 +117,77 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section className="section" id="platforms">
-          <div className="container">
-            <h2>{t('landing.platforms.title')}</h2>
-            <p className="section-sub">{t('landing.platforms.subtitle')}</p>
-            <div className="grid-3">
-              {CHANNEL_LINKS.map((channel) => {
-                const live = channel.status === 'live';
-                return (
-                  <article key={channel.id} className="card channel-card">
-                    <div className={`badge ${live ? 'badge-live' : 'badge-waitlist'}`}>
-                      {live ? t('channels.live') : t('channels.waitlist')}
-                    </div>
-                    <h3>{t(`channels.${channel.id}.title`)}</h3>
-                    <p>{t(`channels.${channel.id}.description`)}</p>
-                    <a className="btn btn-outline" href={channel.href}>
-                      {t(`channels.${channel.id}.cta`)}
-                    </a>
-                  </article>
-                );
-              })}
+        <section className="section product-depth">
+          <div className="container depth-grid">
+            <div className="depth-copy reveal-on-scroll">
+              <span className="eyebrow">02 — {t('landing.platforms.title')}</span>
+              <h2>{t('landing.platforms.subtitle')}</h2>
+              <p>{t('channels.chrome.description')}</p>
+              <a className="text-link" href={chromeHref}>
+                {t('channels.chrome.cta')} <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+            <div className="browser-demo reveal-on-scroll" aria-label="Chrome extension workflow preview">
+              <div className="browser-bar"><i /><i /><i /><span>yourstore.com/products/oak-chair</span></div>
+              <div className="browser-body">
+                <img src="/assets/seo-alt-text-hero.jpg" alt="" loading="lazy" />
+                <div>
+                  <small>SEO focus</small>
+                  <strong>solid oak dining chair</strong>
+                  <small>Suggested alt text</small>
+                  <p>Light oak dining chair with curved backrest in a warm studio setting</p>
+                  <span className="demo-button" aria-hidden="true">Copy alt text</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="section" id="pricing">
+        <section className="section pricing-section" id="pricing">
           <div className="container">
-            <h2>{t('landing.pricing.title')}</h2>
-            <p className="section-sub">{t('landing.pricing.subtitle')}</p>
-            <div className="pricing-grid">
-              <article className="card">
-                <h3>{t('landing.pricing.freeTitle')}</h3>
-                <div className="price">{t('landing.pricing.freePrice')}</div>
-                <p>{t('landing.pricing.freeBody')}</p>
-                <Link to={appHref} className="btn btn-outline">
-                  {t('common.openApp')}
-                </Link>
+            <div className="section-heading reveal-on-scroll">
+              <span className="eyebrow">03 — {t('landing.pricing.title')}</span>
+              <h2>{t('landing.pricing.subtitle')}</h2>
+            </div>
+            <div className="pricing-lines">
+              <article>
+                <div><h3>{t('landing.pricing.freeTitle')}</h3><p>{t('landing.pricing.freeBody')}</p></div>
+                <strong>{t('landing.pricing.freePrice')}</strong>
+                <Link to={appHref} className="btn btn-outline">{t('common.openApp')}</Link>
               </article>
-              <article className="card">
-                <h3>{t('landing.pricing.singleTitle')}</h3>
-                <div className="price">{t('landing.pricing.singlePrice')}</div>
-                <p>{t('landing.pricing.singleBody')}</p>
-                <Link to={appHref} className="btn btn-primary">
-                  {t('landing.pricing.choosePlan')}
-                </Link>
+              <article className="pricing-featured">
+                <div><h3>{t('landing.pricing.singleTitle')}</h3><p>{t('landing.pricing.singleBody')}</p></div>
+                <strong>{t('landing.pricing.singlePrice')}</strong>
+                <Link to={appHref} className="btn btn-primary">{t('landing.pricing.choosePlan')}</Link>
               </article>
-              <article className="card">
-                <h3>{t('landing.pricing.allTitle')}</h3>
-                <div className="price">{t('landing.pricing.allPrice')}</div>
-                <p>{t('landing.pricing.allBody')}</p>
-                <Link to={appHref} className="btn btn-outline">
-                  {t('landing.pricing.comparePlans')}
-                </Link>
+              <article>
+                <div><h3>{t('landing.pricing.allTitle')}</h3><p>{t('landing.pricing.allBody')}</p></div>
+                <strong>{t('landing.pricing.allPrice')}</strong>
+                <Link to={appHref} className="btn btn-outline">{t('landing.pricing.comparePlans')}</Link>
               </article>
             </div>
+          </div>
+        </section>
+
+        <section className="final-cta">
+          <div className="container final-cta-inner">
+            <div>
+              <span className="eyebrow">{t('brand.name')}</span>
+              <h2>{t('landing.hero.title')}</h2>
+            </div>
+            <Link to={appHref} className="btn btn-light btn-large">{t('landing.hero.launchWebApp')}</Link>
           </div>
         </section>
       </main>
 
-      <footer className="footer">
-        <div className="container">
+      <footer className="footer landing-footer">
+        <div className="container footer-inner">
           <div>{t('brand.footer')}</div>
+          <nav aria-label="Legal and support">
+            <a href="/privacy/">Privacy</a>
+            <a href="/terms/">Terms</a>
+            <a href="mailto:charles@acquah.io">Support</a>
+          </nav>
         </div>
       </footer>
     </>

@@ -85,10 +85,16 @@ export default function FullPageApp() {
     if (!items.length) return;
     setGeneratingAll(true);
     try {
-      for (const item of items) {
-        if (item.status === 'done' && item.altText) continue;
-        await generateItem(item.id);
-      }
+      const pending = items.filter((item) => !(item.status === 'done' && item.altText));
+      const queue = [...pending];
+      await Promise.all(
+        Array.from({ length: Math.min(3, queue.length) }, async () => {
+          while (queue.length) {
+            const item = queue.shift();
+            if (item) await generateItem(item.id);
+          }
+        }),
+      );
     } finally {
       setGeneratingAll(false);
     }
@@ -149,7 +155,7 @@ export default function FullPageApp() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <img src={iconSrc} alt="Alt Text Generator" className="w-7 h-7 rounded-lg" />
               <h1 className="text-lg font-semibold" style={{ letterSpacing: '-0.01em', color: '#0b1b44' }}>
-                Alt Text Generator
+                Alt Text Generator Pro
               </h1>
             </div>
             <span

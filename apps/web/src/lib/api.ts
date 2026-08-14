@@ -89,7 +89,7 @@ export async function generateAltText(
   apiBaseUrl: string,
   token: string,
   item: QueueItem,
-  options: { language: string; context: string },
+  options: { language: string; context: string; contentTitle: string; focusKeyword: string; brand: string },
 ): Promise<string> {
   const headers = new Headers();
   headers.set('Authorization', `Bearer ${token}`);
@@ -97,17 +97,19 @@ export async function generateAltText(
   headers.set('X-Client-Scope', 'web');
 
   const payload: Record<string, unknown> = {
-    model: 'gpt-4o',
     language: options.language,
     context: {
       client_scope: 'web',
       page_context: options.context,
       image_notes: options.context,
+      content_title: options.contentTitle,
+      focus_keyword: options.focusKeyword,
+      brand: options.brand,
     },
   };
 
   if (item.dataUrl) {
-    payload.image_base64 = item.dataUrl.replace(/^data:[^,]+,/, '');
+    payload.image_base64 = item.dataUrl;
   } else if (item.imageUrl) {
     payload.image_url = item.imageUrl;
   } else {

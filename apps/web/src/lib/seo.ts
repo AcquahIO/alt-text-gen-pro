@@ -66,9 +66,11 @@ function createStructuredData(
       url,
       description,
       offers: {
-        '@type': 'Offer',
-        price: '0',
+        '@type': 'AggregateOffer',
+        lowPrice: '10',
+        highPrice: '19',
         priceCurrency: 'USD',
+        offerCount: 3,
       },
     };
   }
@@ -151,10 +153,14 @@ export function useSeo(routeId: RouteId): void {
     upsertMeta('property', 'og:description', payload.description);
     upsertMeta('property', 'og:url', payload.canonicalUrl);
     upsertMeta('property', 'og:locale', toOgLocale(locale));
-    upsertMeta('name', 'twitter:card', 'summary');
+    const socialImage = `${APP_ORIGIN}/assets/seo-alt-text-hero.jpg`;
+    upsertMeta('property', 'og:image', socialImage);
+    upsertMeta('property', 'og:image:alt', 'Light oak dining chair against a warm studio background');
+    upsertMeta('name', 'twitter:card', 'summary_large_image');
     upsertMeta('name', 'twitter:title', payload.title);
     upsertMeta('name', 'twitter:description', payload.description);
     upsertMeta('name', 'twitter:url', payload.canonicalUrl);
+    upsertMeta('name', 'twitter:image', socialImage);
     upsertLink('canonical', payload.canonicalUrl);
 
     for (const altLocale of SUPPORTED_LOCALES) {

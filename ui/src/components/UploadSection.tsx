@@ -93,7 +93,7 @@ export function UploadSection({
         <h2 className="text-2xl font-semibold text-foreground" style={{ lineHeight: 1.1, letterSpacing: '-0.01em' }}>
           Upload images
         </h2>
-        <p className="text-base text-muted-foreground">Choose language, add optional context, then generate.</p>
+        <p className="text-base text-muted-foreground">Add your SEO focus, then generate accurate alt text in batches.</p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -209,11 +209,11 @@ export function UploadSection({
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <Label htmlFor="popup-context" className="text-sm">
-          Optional context
+          SEO focus and page context
         </Label>
         <Textarea
           id="popup-context"
-          placeholder="Project/site context to inform descriptions (optional)"
+          placeholder="Example: Product: oak dining chair. Focus keyword: solid oak dining chair. Brand: North & Pine."
           value={context}
           onChange={(e) => onContextChange(e.target.value)}
           style={{

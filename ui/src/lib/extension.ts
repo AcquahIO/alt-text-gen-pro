@@ -94,7 +94,7 @@ export function getRuntimeUrl(path: string): string {
       console.warn('chrome.runtime.getURL failed', e);
     }
   }
-  return path;
+  return path.startsWith('icons/') ? `../${path}` : path;
 }
 
 export async function openFullPageView(): Promise<void> {

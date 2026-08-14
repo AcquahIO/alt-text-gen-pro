@@ -1,212 +1,99 @@
-# Alt Text Generator Pro Product Requirements
+# Alt Text Generator Pro — Launch Product Requirements
 
-Status: Living document (single source of truth)  
-Owner: Product + Engineering  
-Last updated: 2026-02-08
+Status: launch scope approved
+Last updated: 14 August 2026
 
-## 1) Product Goal
+## Product thesis
 
-Build Alt Text Generator Pro as a multi-platform product with:
-- One shared user identity across Chrome, Shopify, and WordPress.
-- Flexible subscriptions:
-  - Platform-specific plans (`chrome`, `shopify`, `wordpress`)
-  - Bundle plan (`all-access`) that unlocks all platforms.
-- Consistent alt-text generation quality and account state across all clients.
+Alt Text Generator Pro helps ecommerce teams, content publishers, and SEO practitioners turn webpage or uploaded images into concise, editable alt text. The product should use a focus keyword only when the visible image and page context support it. Accuracy takes precedence over keyword inclusion.
 
-## 2) Platforms In Scope
+The launch wedge is Chrome: generate while editing or reviewing a real page. The web app is the companion workflow for uploads, public image URLs, account management, and billing. Shopify and WordPress are explicitly deferred until repeat usage validates the core workflow.
 
-- Chrome Extension (Manifest V3)
-- Shopify App
-- WordPress Plugin
-- Shared Backend API (`server/`) and shared account/billing domain
+## Launch surface
 
-## 3) Core Product Requirements
+- Chrome extension (Manifest V3): right-click generation, page image collection, uploads, batch generation, copy, and metadata download.
+- Web app: uploads, public image URLs, SEO context, editable results, billing, usage, and history.
+- Shared backend: authentication, entitlements, Stripe billing, fair-use counters, generation, and privacy-minimal cost telemetry.
+- Public website: SEO-oriented positioning, exact launch pricing, privacy policy, terms, and support contact.
 
-### 3.1 Unified Account Identity
+## Core user job
 
-- A user creates one Alt Text Generator Pro account (email/password and/or Google sign-in).
-- The same account can sign in to all clients (Chrome, Shopify, WordPress).
-- Account profile and billing state are centralized in backend.
+Given an image and optional product/page context, return one natural alt attribute candidate that:
 
-### 3.2 Entitlement-Based Access
+1. describes what is visibly present;
+2. stays at or below 125 characters;
+3. avoids “image of”, marketing claims, hashtags, and keyword stuffing;
+4. uses the focus keyword only when visually and contextually justified;
+5. remains editable before copying, downloading, or publishing.
 
-- Access is controlled by entitlements, not by client app alone.
-- Entitlement codes:
-  - `chrome`
-  - `shopify`
-  - `wordpress`
-  - `all` (implies all above)
-- Access rule:
-  - User may use a client if they have matching entitlement OR `all`.
+## Launch plans
 
-### 3.3 Subscription Catalog
+| Plan | Price | Access |
+| --- | ---: | --- |
+| Web | $10/month | Web generation |
+| Chrome | $10/month | Chrome generation |
+| Web + Chrome | $19/month | Both launch clients |
 
-- Product plans:
-  - `plan_chrome`
-  - `plan_shopify`
-  - `plan_wordpress`
-  - `plan_all_access`
-- Trials:
-  - Trial policy is tracked in Decision Register item `DR-001`.
-- Billing portal support for managing active subscription(s).
+- One three-day free trial per eligible account.
+- 60 successful generations/hour, 200/day, and 5,000/month, shared across entitled products.
+- Failed requests do not consume the generation allowance.
+- Stripe Checkout and Customer Portal are the billing surfaces.
 
-### 3.4 Cross-Platform Consistency
+## Quality and cost requirements
 
-- Subscription and entitlement status must resolve consistently across all clients.
-- Upgrade/downgrade/cancellation should propagate to all clients quickly (target < 60s after webhook processing).
-- Shared usage limits policy must be defined:
-  - Option A: Shared quota by account
-  - Option B: Per-platform quota
-  - Option C: Hybrid (decision pending)
+- The server controls the model and image-detail setting; clients cannot select a more expensive model.
+- Launch default: `gpt-4o` with image `detail: low`.
+- Record input/output tokens, estimated model cost, latency, scope, success, and error category.
+- Do not store image data, page context, or generated alt text in generation telemetry.
+- Remote image inputs must reject credentials, local hosts, and private network literals.
+- A generation is counted only after a successful model response.
 
-## 4) Platform-Specific Requirements
+## Security and privacy requirements
 
-### 4.1 Chrome Extension
+- Generation requires a signed-in account and the matching entitlement.
+- Email self-registration remains disabled until verified-email or password-reset flows exist; Google sign-in and pre-provisioned review accounts are supported.
+- Redirect URIs and CORS origins are allowlisted.
+- Images and context are processed for the request and are not intentionally persisted by the application.
+- Payment-card data is handled by Stripe.
+- Public privacy and terms pages must be live before Chrome Store submission.
 
-- Keep MV3-compliant extension architecture.
-- Must support sign-in, plan display, upgrade/manage flow.
-- Must block generation if entitlement check fails.
+## Launch acceptance criteria
 
-### 4.2 Shopify App
+- Backend lint, unit tests, TypeScript build, Prisma generation, and production migration pass.
+- Web and extension production builds pass with no browser console errors in tested core pages.
+- Chrome package contains only required MV3 source, UI bundles, icons, and locale files.
+- Store screenshot is 1280×800; promotional assets are 440×280 and 1400×560.
+- Chrome listing copy, single-purpose statement, permissions, and data-use disclosures match actual behaviour.
+- Production `/privacy`, `/terms`, auth, subscription status, and generation endpoints are reachable.
+- A reviewer account can exercise Chrome generation without entering payment details.
 
-- Shopify app uses same Alt Text Generator Pro identity mapping.
-- Billing model must comply with Shopify billing requirements for app distribution channel used.
-- Store-level install must be linkable to a central account identity.
+## First 30-day learning plan
 
-### 4.3 WordPress Plugin
+With no existing usage baseline, success is evidence of repeated completion rather than top-of-funnel volume:
 
-- Plugin authenticates to central backend using shared account.
-- Plugin must clearly disclose external SaaS usage/privacy behavior.
-- Plugin enforces entitlement before generation.
+- Activation: installs that sign in and complete a first successful generation.
+- Time to first value: median time from install to first copied result.
+- Repeat use: accounts with successful generations on two or more distinct days within 14 days.
+- Output utility: share of generated results copied or downloaded; regeneration rate as a quality warning signal.
+- Reliability: successful generation rate and p95 latency.
+- Unit economics: estimated OpenAI cost per successful generation and gross model margin by plan.
+- Conversion: trial start, trial completion, paid conversion, and early cancellation.
 
-## 5) Backend Requirements
+## Deferred
 
-### 5.1 Data Model (Target)
+- Shopify and WordPress distribution.
+- Automatic publishing into third-party CMS fields.
+- Team seats and organisation billing.
+- Unverified email registration.
+- Claims of ranking improvement or guaranteed accessibility compliance.
 
-Current model stores one subscription on `User`; target model needs normalized billing/entitlements.
+## Decisions
 
-Required entities:
-- `User` (identity)
-- `Subscription` (provider record; one user can have many)
-- `Entitlement` (resolved access grants by product scope)
-- `BillingProviderCustomer` mapping (for Stripe and/or platform providers)
-- `UsageCounter` (may become per-scope)
-
-Minimum fields (guidance):
-- `Subscription`: `id`, `userId`, `provider`, `providerSubscriptionId`, `status`, `planCode`, `currentPeriodEnd`, `trialEnd`, `cancelAtPeriodEnd`
-- `Entitlement`: `id`, `userId`, `scope`, `sourceSubscriptionId`, `status`, `startsAt`, `endsAt`
-
-### 5.2 API Contracts (Target)
-
-- `GET /api/subscription-status`
-  - Returns user subscription summary and per-scope entitlements.
-- `POST /api/create-checkout-session`
-  - Accepts selected `planCode`.
-- `POST /api/create-portal-session`
-  - Opens relevant billing management flow.
-- Protected generation routes must require entitlement for requested scope.
-
-### 5.3 Webhooks
-
-- Webhook processing must update:
-  - Subscription records
-  - Derived entitlements
-  - Trial markers
-- Webhook handlers must be idempotent and safe to replay.
-
-## 6) UX Requirements
-
-- Signed-in state must show:
-  - Current plan(s)
-  - Which platforms are unlocked
-  - Trial state and renewal/cancelation metadata
-- Upgrade path:
-  - User can buy single platform plan or all-access plan.
-- Clear messaging when access denied:
-  - Explain missing entitlement and provide upgrade CTA.
-
-## 7) Security & Compliance
-
-- JWT-based auth for API access; secure token storage per platform.
-- Strict allowlist/validation for redirect URIs and origins.
-- Principle of least privilege for API keys and webhooks.
-- Privacy policy and terms must cover all three platform clients.
-
-## 8) Reliability & Quality
-
-- Entitlement checks must be deterministic and test-covered.
-- Billing state should recover from webhook delays/retries.
-- Core flows require automated tests:
-  - Sign-in
-  - Checkout by plan
-  - Webhook sync
-  - Entitlement enforcement
-  - Upgrade/downgrade path
-
-## 9) Milestones
-
-### Phase 1: Foundation (Backend Domain)
-
-- Introduce normalized subscription + entitlement schema.
-- Add migration from single-subscription user model.
-- Ship new status API shape with per-scope entitlements.
-
-### Phase 2: Chrome Migration
-
-- Update extension UI/session to consume entitlement map.
-- Update checkout to select plan.
-- Keep current behavior for existing paid users via migration logic.
-
-### Phase 3: WordPress Plugin
-
-- Build plugin auth flow to shared backend.
-- Enforce entitlements and usage policies.
-- Add plugin docs/privacy disclosures.
-
-### Phase 4: Shopify App
-
-- Build Shopify app auth/account linking.
-- Implement compliant Shopify billing strategy.
-- Map Shopify billing outcomes to shared entitlements.
-
-### Phase 5: Hardening
-
-- Observability, reconciliation jobs, billing/entitlement audit reports.
-- End-to-end tests across all clients.
-
-## 10) Success Metrics
-
-- % of active users with successful cross-platform sign-in
-- Entitlement mismatch rate (target: near zero)
-- Subscription conversion by plan type (single-platform vs all-access)
-- Churn by plan type
-- Support ticket volume for billing/access issues
-
-## 11) Decision Register (Execution Start)
-
-This table tracks required product decisions.  
-Status values: `proposed`, `approved`, `blocked`.
-
-| ID | Decision | Recommended default to start | Owner | Target date | Status |
-| --- | --- | --- | --- | --- | --- |
-| DR-001 | Trial scope | One 3-day free trial per account (not per platform). | Product Owner | 2026-02-12 | proposed |
-| DR-002 | Usage limits policy | Shared account-level quota across all platforms for v1. | Product + Engineering | 2026-02-12 | proposed |
-| DR-003 | Stripe plan mapping | Create four recurring monthly prices: `plan_chrome`, `plan_shopify`, `plan_wordpress`, `plan_all_access` (USD-first). | Engineering | 2026-02-13 | proposed |
-| DR-004 | Shopify launch path | Start with custom app pilot stores, then evaluate public listing after stability/compliance pass. | Product | 2026-02-14 | proposed |
-| DR-005 | WordPress launch path | Start private/commercial plugin distribution first; defer wordpress.org listing until policy review is complete. | Product | 2026-02-14 | proposed |
-| DR-006 | Entitlement source of truth | Backend database derived from subscription events, with webhook idempotency and periodic reconciliation. | Engineering | 2026-02-13 | proposed |
-| DR-007 | Existing user migration | Migrate current active/trial users to temporary `all` entitlement during migration window. | Engineering | 2026-02-15 | proposed |
-
-## 12) Immediate Next Actions (Kickoff)
-
-1. Approve or edit `DR-001` through `DR-007`.
-2. Finalize Stripe price IDs and map each to entitlement scopes.
-3. Implement Prisma schema migration for `Subscription` and `Entitlement`.
-4. Update `/api/subscription-status` to return entitlement map.
-5. Update checkout API to require `planCode`.
-6. Update Chrome UI to read entitlement map and route to plan-specific checkout.
-
-## 13) Change Log
-
-- 2026-02-08: Initial cross-platform requirements draft created as central project PRD.
-- 2026-02-08: Added execution decision register (`DR-001` to `DR-007`) and kickoff actions.
+| Decision | Launch choice |
+| --- | --- |
+| Primary segment | Ecommerce/content teams doing image SEO in Chrome |
+| Distribution focus | Chrome Web Store first; web app supports activation and billing |
+| Output positioning | SEO-aware and accuracy-first |
+| Model strategy | `gpt-4o`, `detail: low`, server-controlled |
+| Quota | Shared account-level successful-generation limits |
+| Scope | Web + Chrome only |

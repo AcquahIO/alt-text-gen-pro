@@ -2,9 +2,9 @@
   "brand": {
     "name": "Alt Text Generator Pro",
     "shortName": "AT",
-    "tagline": "Web, Chrome, Shopify, WordPress",
-    "sharedTagline": "Shared account across web, Chrome, Shopify, and WordPress",
-    "footer": "Alt Text Generator Pro · Accessibility-first image description workflows"
+    "tagline": "SEO alt text for web and Chrome",
+    "sharedTagline": "One account for web and Chrome",
+    "footer": "Alt Text Generator Pro · Accurate, SEO-aware image alt text"
   },
   "common": {
     "home": "Home",
@@ -52,12 +52,12 @@
   "seo": {
     "siteName": "Alt Text Generator Pro",
     "landing": {
-      "title": "Alt Text Generator Pro | AI alt text for web, Chrome, Shopify, and WordPress",
-      "description": "Generate high-quality image alt text with one shared account across the web app, Chrome, Shopify, and WordPress."
+      "title": "SEO Alt Text Generator for Images | Alt Text Generator Pro",
+      "description": "Generate accurate, SEO-aware image alt text in seconds. Add product context and focus keywords without keyword stuffing."
     },
     "app": {
-      "title": "Alt Text Generator Pro App | Generate accessible image descriptions",
-      "description": "Upload images, generate alt text, and manage shared subscriptions and entitlements from the Alt Text Generator Pro web app."
+      "title": "SEO Alt Text Generator App | Alt Text Generator Pro",
+      "description": "Upload images and generate accurate, editable, SEO-aware alt text with product context, focus keywords, and batch processing."
     },
     "authCallback": {
       "title": "Signing in | Alt Text Generator Pro",
@@ -81,47 +81,47 @@
       "startGenerating": "Start Generating"
     },
     "hero": {
-      "title": "Ship better accessibility with fast, high-quality alt text.",
-      "body": "Alt Text Generator Pro helps teams generate accurate alt text at scale. Use the web app for uploads and URL generation, then connect the same account across Chrome, Shopify, and WordPress.",
+      "title": "Alt text that reads naturally—and works harder for search.",
+      "body": "Turn product and editorial images into accurate, SEO-aware alt text. Add your page context and focus keyword, then review, edit, and publish.",
       "launchWebApp": "Launch Web App",
       "explorePlatforms": "Explore Platforms",
       "stagingNotice": "Staging build: this environment is intended for pre-release validation."
     },
     "kpis": {
-      "channelsTitle": "3 channels",
-      "channelsBody": "Web + extension + platform integrations",
-      "accountTitle": "Shared account",
-      "accountBody": "Unified billing and entitlements",
+      "channelsTitle": "SEO-aware",
+      "channelsBody": "Uses page and product context naturally",
+      "accountTitle": "Accuracy-first",
+      "accountBody": "Keywords are included only when supported",
       "batchTitle": "Batch-ready",
-      "batchBody": "Generate alt text for multiple assets quickly",
-      "info": "The same backend intelligence powers the web app, extension, and integrations."
+      "batchBody": "Process multiple images three at a time",
+      "info": "3-day free trial · Cancel any time"
     },
     "features": {
-      "title": "Built for teams shipping content every day",
-      "subtitle": "Keep visual language consistent, enforce quality, and route through one entitlement-aware account layer.",
-      "contextTitle": "Context-aware generation",
-      "contextBody": "Provide optional context and language settings to produce cleaner, more relevant descriptions.",
-      "subscriptionsTitle": "Unified subscriptions",
-      "subscriptionsBody": "Use one account across products, with centralised billing and platform entitlements.",
-      "metadataTitle": "Download with metadata",
-      "metadataBody": "Embed generated descriptions into downloaded files for smoother publishing handoff."
+      "title": "From image to publish-ready alt text",
+      "subtitle": "A focused workflow for accurate descriptions, natural keyword use, and faster publishing.",
+      "contextTitle": "Add useful SEO context",
+      "contextBody": "Give the generator a product or content title, brand, focus keyword, and any nearby page context.",
+      "subscriptionsTitle": "Generate and review",
+      "subscriptionsBody": "AI describes what is visible, uses your keyword only when it fits, and returns concise alt text you can edit.",
+      "metadataTitle": "Copy or download",
+      "metadataBody": "Copy the final text into your CMS or download uploaded images with the description embedded as metadata."
     },
     "platforms": {
-      "title": "Use Alt Text Generator Pro anywhere you work",
-      "subtitle": "Start with the web app, then expand to channel-specific workflows."
+      "title": "Work on the page, not around it",
+      "subtitle": "Use the web app for uploads or the Chrome extension to collect images and generate alt text from the page you are editing."
     },
     "pricing": {
-      "title": "Pricing that scales with your workflow",
-      "subtitle": "Start with trial access, then upgrade to channel-specific or all-access plans in your account dashboard.",
-      "freeTitle": "Free",
-      "freePrice": "$0",
-      "freeBody": "Sign in and start with trial eligibility and entitlement-based access checks.",
-      "singleTitle": "Single Channel",
-      "singlePrice": "From $10",
-      "singleBody": "Unlock the channel you need now, with options to expand later.",
-      "allTitle": "All Access",
-      "allPrice": "Bundle",
-      "allBody": "One subscription for Chrome, Shopify, WordPress, and web usage flows.",
+      "title": "Simple pricing before you scale",
+      "subtitle": "Try every paid plan free for three days. Each account includes up to 5,000 successful generations per month under fair use.",
+      "freeTitle": "Free trial",
+      "freePrice": "3 days",
+      "freeBody": "Test the complete workflow before your first charge. One trial per account; cancel any time.",
+      "singleTitle": "Web or Chrome",
+      "singlePrice": "$10 / month",
+      "singleBody": "Choose the web upload workflow or the Chrome extension. Includes up to 5,000 generations per month.",
+      "allTitle": "Web + Chrome",
+      "allPrice": "$19 / month",
+      "allBody": "Use both launch products with one account and one shared monthly generation allowance.",
       "choosePlan": "Choose Plan",
       "comparePlans": "Compare Plans"
     }
@@ -131,8 +131,8 @@
     "waitlist": "Waitlist",
     "chrome": {
       "title": "Chrome Extension",
-      "description": "Right-click generation and page-level image capture in your browser.",
-      "cta": "Use on Chrome"
+      "description": "Collect page images, use nearby content for SEO context, and generate or copy alt text without leaving Chrome.",
+      "cta": "Get the Chrome extension"
     },
     "shopify": {
       "title": "Shopify App",
@@ -157,7 +157,7 @@
     "recentResults": "Recent results",
     "noRecentResults": "No recent generations yet.",
     "plansTitle": "Plans",
-    "plansSubtitle": "Choose the plan that matches how you work. All Access keeps your current product access and unlocks every client with one subscription.",
+    "plansSubtitle": "Choose web, Chrome, or both. Every paid plan starts with a three-day free trial and includes up to 5,000 successful generations per month under fair use.",
     "roadmapTitle": "Coming soon",
     "roadmapSubtitle": "These products stay visible so you can see the roadmap, but they are not available for self-serve purchase yet.",
     "planDescriptions": {
@@ -165,19 +165,19 @@
       "plan_chrome": "Right-click generation, page-level image collection, and the extension full-page workflow.",
       "plan_shopify": "Store-connected product workflows and entitlement-aware generation for Shopify teams.",
       "plan_wordpress": "Shared-account media generation workflows inside WordPress.",
-      "plan_all_access": "One subscription that unlocks web, Chrome, Shopify, and WordPress."
+      "plan_all_access": "One subscription for both the web app and Chrome extension."
     },
     "planTitles": {
       "plan_web": "Web",
       "plan_chrome": "Chrome Extension",
       "plan_shopify": "Shopify",
       "plan_wordpress": "WordPress",
-      "plan_all_access": "All Access"
+      "plan_all_access": "Web + Chrome"
     },
     "planBestFor": {
       "plan_web": "Upload and generate alt text inside the web app.",
       "plan_chrome": "Use page-level and right-click generation in Chrome.",
-      "plan_all_access": "Keep current access and unlock every client with one account."
+      "plan_all_access": "Use both the web app and Chrome extension with one account."
     },
     "usage": {
       "hour": "Hour",
@@ -246,6 +246,13 @@
     "generateTitle": "Generate Alt Text",
     "imageUrlLabel": "Add image by URL",
     "imageUrlPlaceholder": "https://example.com/image.jpg",
+    "contentTitleLabel": "Product or content title",
+    "contentTitlePlaceholder": "Oak dining chair",
+    "focusKeywordLabel": "Focus keyword",
+    "focusKeywordPlaceholder": "solid oak dining chair",
+    "brandLabel": "Brand (optional)",
+    "brandPlaceholder": "North & Pine",
+    "generatedAltTextLabel": "Generated alt text",
     "contextPlaceholder": "Project, page, or editorial context to improve descriptions",
     "noItems": "No images queued yet. Upload files or add an image URL above.",
     "noAltTextYet": "No alt text generated yet.",

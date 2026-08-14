@@ -61,7 +61,7 @@
   <body>
     <main>
       <h1>Alt Text Generator Pro - Privacy Policy</h1>
-      <div class="meta">Last updated: February 3, 2026</div>
+      <div class="meta">Last updated: August 14, 2026</div>
 
       <p>
         This Privacy Policy explains how the Alt Text Generator Pro Chrome extension
@@ -91,8 +91,9 @@
           (alt text, image URL, page title, timestamp) and pending uploads to support the UI.
         </li>
         <li>
-          API key and settings. If you provide your own API key or endpoint, these values
-          are stored in Chrome sync storage so they can be used across devices.
+          Operational data. Successful-generation counts, model name, image detail setting,
+          token counts, estimated cost, latency, error category, and timestamps are recorded
+          without the image, generated alt text, or page context.
         </li>
       </ul>
 
@@ -106,11 +107,10 @@
 
       <h2>Where Data Is Processed</h2>
       <p>
-        Image and context data are sent to the endpoint configured in the extension.
-        By default, this may be our hosted backend. If you configure your own endpoint,
-        data is sent to that endpoint instead. If you provide an OpenAI API key, data may
-        be sent directly to OpenAI for processing. Third-party services have their own
-        privacy policies and terms.
+        Image and context data are sent to our hosted backend and then to OpenAI to generate
+        alt text. Stripe processes subscriptions, Heroku hosts the backend and database, and
+        Google may process sign-in when you choose Google authentication. These services have
+        their own privacy policies, terms, and international data-transfer safeguards.
       </p>
 
       <h2>Data Retention</h2>
@@ -121,15 +121,14 @@
         </li>
         <li>
           Server processing: images and context are used to generate alt text. We do not
-          intentionally store image content beyond processing, but operational logs or
-          error traces may be retained for reliability and abuse prevention.
+          intentionally store image content or page context beyond processing. Privacy-minimal
+          generation telemetry may be retained for reliability, cost control, and abuse prevention.
         </li>
       </ul>
 
       <h2>Your Choices</h2>
       <ul>
         <li>Clear recent results from the extension UI.</li>
-        <li>Remove your API key or endpoint in settings.</li>
         <li>Sign out to clear stored auth data.</li>
         <li>Uninstall the extension to remove all local data.</li>
       </ul>
@@ -157,9 +156,6 @@
         <p>
           For privacy questions, contact us at:
           <strong>charles@acquah.io</strong>
-        </p>
-        <p>
-          If you do not have an email, you can link to a support page or GitHub Issues page here.
         </p>
       </div>
     </main>

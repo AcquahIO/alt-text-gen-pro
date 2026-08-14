@@ -2,8 +2,7 @@
 // Registers context menu, coordinates AI calls, and messaging.
 
 import { t } from './utils/i18n.js';
-import { getOpenAIClient } from './utils/openaiClient.js';
-import { composeAltText, validateAltText, inferRole, normalize } from './utils/composeAltText.js';
+import { inferRole } from './utils/composeAltText.js';
 import { ensureMaxDataUrlSize } from './utils/imageTools.js';
 import {
   FALLBACK_PRODUCTION_BASE,
@@ -347,59 +346,31 @@ async function analysePipeline(imageUrlOrDataUrl, ctxRaw) {
   const ctx = getPageContext(ctxRaw);
   const role = inferRole(ctx);
   const [cfg, localState] = await Promise.all([
-    chrome.storage.sync.get({ apiEndpoint: '', apiKey: '', preferredLanguage: '' }),
+    chrome.storage.sync.get({ apiEndpoint: '', preferredLanguage: '' }),
     chrome.storage.local.get({ auth: null }),
   ]);
   const endpoint = (cfg.apiEndpoint || '').trim();
   const language = (cfg.preferredLanguage || ctx.pageLang || navigator.language || '').toString();
   const authToken = String(localState?.auth?.token || '').trim();
-  const backendCredential = selectBackendCredential({
-    endpoint,
-    authToken,
-    sharedOrApiKey: cfg.apiKey || '',
-  });
-
-  // If a backend endpoint is configured, use it (no client-side OpenAI key required)
-  let backendError = null;
-  if (endpoint) {
-    try {
-      const { alt } = await callBackendEndpoint(endpoint, imageUrlOrDataUrl, ctx, backendCredential, language);
-      const finalAlt = alt || '';
-      return { visionDesc: finalAlt, ctx, role, blendedAlt: finalAlt };
-    } catch (e) {
-      backendError = e;
-      console.warn('Backend call failed, falling back to local vision:', e?.message || e);
-    }
+  const backendCredential = selectBackendCredential({ endpoint, authToken });
+  if (!endpoint) throw new Error('Generation service is not configured. Reopen the extension and try again.');
+  try {
+    const { alt } = await callBackendEndpoint(endpoint, imageUrlOrDataUrl, ctx, backendCredential, language);
+    const finalAlt = alt || '';
+    return { visionDesc: finalAlt, ctx, role, blendedAlt: finalAlt };
+  } catch (error) {
+    throw normalizeBackendErrorForUser(error);
   }
-
-  const apiKey = (cfg.apiKey || '').trim();
-  if (!apiKey) {
-    if (backendError) throw normalizeBackendErrorForUser(backendError);
-    throw new Error('Missing OpenAI API key');
-  }
-  if (!looksLikeOpenAiKey(apiKey)) {
-    if (backendError) throw normalizeBackendErrorForUser(backendError);
-    throw new Error('Configured API key is not a valid OpenAI key');
-  }
-
-  // Fallback to client-side OpenAI vision if backend unavailable
-  const visionDesc = await analyseImageWithVision(imageUrlOrDataUrl, language);
-  let alt = composeAltText(visionDesc, ctx, role);
-  let valid = validateAltText(alt).ok;
-  if (!valid) {
-    const retryVision = await analyseImageWithVision(imageUrlOrDataUrl, language);
-    alt = composeAltText(retryVision || visionDesc, ctx, role);
-  }
-  return { visionDesc: normalize(visionDesc), ctx, role, blendedAlt: alt };
 }
 
 async function callBackendEndpoint(endpoint, imageUrlOrDataUrl, ctx, sharedKey, language) {
   const isData = /^data:/i.test(imageUrlOrDataUrl || '');
   const payload = {
-    model: 'gpt-4o',
     context: {
       client_scope: 'chrome',
-      page_context: [ctx?.nearestHeading, ctx?.title].filter(Boolean).join(' | '),
+      page_context: [ctx?.nearestHeading, ctx?.meta, ctx?.title, ctx?.userContext].filter(Boolean).join(' | '),
+      content_title: ctx?.nearestHeading || ctx?.title || '',
+      focus_keyword: ctx?.userContext || '',
       image_role: inferRole(ctx),
       image_notes: ctx?.dataHints || '',
     },
@@ -407,7 +378,7 @@ async function callBackendEndpoint(endpoint, imageUrlOrDataUrl, ctx, sharedKey, 
   };
   if (isData) {
     const safeDataUrl = await ensureMaxDataUrlSize(imageUrlOrDataUrl, MAX_BACKEND_BYTES);
-    payload.image_base64 = safeDataUrl.replace(/^data:[^,]+;base64,/, '');
+    payload.image_base64 = safeDataUrl;
   }
   else payload.image_url = imageUrlOrDataUrl;
 
@@ -439,27 +410,26 @@ async function callBackendEndpoint(endpoint, imageUrlOrDataUrl, ctx, sharedKey, 
   return { alt };
 }
 
-function selectBackendCredential({ endpoint, authToken, sharedOrApiKey }) {
+function selectBackendCredential({ endpoint, authToken }) {
   const token = String(authToken || '').trim();
-  const fallbackKey = String(sharedOrApiKey || '').trim();
-  if (!token || token.split('.').length !== 3) return fallbackKey;
+  if (!token || token.split('.').length !== 3) return '';
 
   const endpointOrigin = normalizeBaseUrl(endpoint);
-  if (!endpointOrigin) return fallbackKey;
+  if (!endpointOrigin) return '';
 
   const manifest = chrome.runtime?.getManifest?.();
   const knownRemotes = collectKnownRemoteOrigins({ manifest });
-  if (!isRecognizedOrigin(endpointOrigin, knownRemotes)) return fallbackKey;
+  if (!isRecognizedOrigin(endpointOrigin, knownRemotes)) return '';
 
   return token;
 }
 
 function normalizeBackendErrorForUser(err) {
-  if (!err) return new Error('Backend request failed and no OpenAI API key is set.');
+  if (!err) return new Error('Generation service request failed.');
   const status = Number(err.status) || 0;
   const backendMessage = parseBackendErrorMessage(err).toLowerCase();
   if (status === 413) {
-    return new Error('Image is too large for the shared backend (~2 MB limit). Try a smaller image or add your own OpenAI API key.');
+    return new Error('Image is too large to process. Try a smaller image.');
   }
   if (status === 402) {
     return new Error('Your plan does not include Chrome generation. Upgrade your subscription to continue.');
@@ -474,9 +444,9 @@ function normalizeBackendErrorForUser(err) {
     if (backendMessage.includes('invalid') || backendMessage.includes('expired')) {
       return new Error('Your session expired. Sign in again from the extension popup.');
     }
-    return new Error('Backend rejected the request. Check the shared key or configure your own OpenAI API key.');
+    return new Error('The generation service rejected the request. Sign in again and retry.');
   }
-  return new Error(err.message || 'Backend request failed and no OpenAI API key is set.');
+  return new Error(err.message || 'Generation service request failed.');
 }
 
 function parseBackendErrorMessage(err) {
@@ -518,72 +488,6 @@ async function saveRecent(entry) {
 }
 
 /**
- * Fetch image, convert to base64, and call OpenAI vision (Chat Completions)
- * @param {string} imageUrl
- * @returns {Promise<string>} vision description string
- */
-export async function analyseImageWithVision(imageUrl, language) {
-  const cfg = await chrome.storage.sync.get({ apiKey: '', model: 'gpt-4o' });
-  const apiKey = (cfg.apiKey || '').trim();
-  const model = sanitizeModel((cfg.model || 'gpt-4o').trim());
-  if (!apiKey) throw new Error('Missing OpenAI API key');
-  if (!looksLikeOpenAiKey(apiKey)) throw new Error('Configured API key is not a valid OpenAI key');
-
-  // Fetch as bytes. If it's a data URL we can pass through.
-  let dataUrl = '';
-  if (/^data:/i.test(imageUrl)) {
-    dataUrl = imageUrl;
-  } else {
-    const res = await fetch(imageUrl, { mode: 'cors' });
-    if (!res.ok) throw new Error(`Image fetch ${res.status}`);
-    const blob = await res.blob();
-    const buf = await blob.arrayBuffer();
-    const b64 = arrayBufferToBase64(buf);
-    const ct = blob.type || 'image/*';
-    dataUrl = `data:${ct};base64,${b64}`;
-  }
-
-  const client = getOpenAIClient(apiKey);
-  const langNote = (language || '').trim();
-  const sys = `You produce alt text from the visual content only. Output ONE concise line in ${langNote || 'the user\'s language'}. Keep it \u2264120 characters, no quotes, no hashtags, no pipes, no prefixes like 'Image of'. Avoid marketing and keyword stuffing. Follow the target language\'s conventions.`;
-  const body = {
-    model,
-    temperature: 0.2,
-    max_tokens: 60,
-    messages: [
-      { role: 'system', content: sys },
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: 'Describe the main visible subject for alt text only.' },
-          { type: 'image_url', image_url: { url: dataUrl } },
-        ],
-      },
-    ],
-  };
-  const json = await client.chat.completions.create(body);
-  const text = json?.choices?.[0]?.message?.content || '';
-  return normalize(text);
-}
-
-function sanitizeModel(m) {
-  // correct common mistakes and unsupported models
-  if (!m) return 'gpt-4o';
-  // typos or shorthand
-  if (/^apt-4o$/i.test(m) || /^gpt4o$/i.test(m) || /^4o$/i.test(m)) return 'gpt-4o';
-  // image generation model is not suitable for vision understanding
-  if (/^gpt-image/i.test(m)) return 'gpt-4o';
-  // default to a known multimodal chat model
-  return m || 'gpt-4o';
-}
-
-function looksLikeOpenAiKey(value) {
-  const key = String(value || '').trim();
-  // Covers standard and project keys (e.g. sk-..., sk-proj-...), plus short-lived session keys.
-  return /^sk-|^sess-/i.test(key);
-}
-
-/**
  * Turn raw DOM details from the content script into a PageContext shape.
  */
 export function getPageContext(raw) {
@@ -602,6 +506,8 @@ export function getPageContext(raw) {
     isSmallSquare: !!raw?.isSmallSquare,
     size: raw?.size || undefined,
     pageLang: raw?.pageLang || '',
+    meta: raw?.meta || '',
+    userContext: raw?.userContext || '',
   };
   return ctx;
 }

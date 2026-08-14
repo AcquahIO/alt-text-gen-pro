@@ -27,7 +27,8 @@ const OUTPUT_LANGUAGES = [
 ] as const;
 
 const SELF_SERVE_PLAN_CODES: readonly PlanCode[] = ['plan_web', 'plan_chrome', 'plan_all_access'] as const;
-const ALL_CLIENT_SCOPES: readonly ClientScope[] = ['web', 'chrome', 'shopify', 'wordpress'] as const;
+const ALL_CLIENT_SCOPES: readonly ClientScope[] = ['web', 'chrome'] as const;
+const GENERATION_CONCURRENCY = 3;
 
 interface DisplayBillingCatalogEntry extends BillingCatalogEntry {
   displayTitle: string;
@@ -44,7 +45,7 @@ const DEFAULT_CATALOG: BillingCatalogEntry[] = [
     unlockedScopes: ['web'],
     purchaseEnabled: true,
     current: false,
-    price: null,
+    price: { unitAmount: 1000, currency: 'usd', interval: 'month', intervalCount: 1 },
     recommended: false,
     preservesCurrentAccess: true,
     gainsScopes: ['web'],
@@ -59,7 +60,7 @@ const DEFAULT_CATALOG: BillingCatalogEntry[] = [
     unlockedScopes: ['chrome'],
     purchaseEnabled: true,
     current: false,
-    price: null,
+    price: { unitAmount: 1000, currency: 'usd', interval: 'month', intervalCount: 1 },
     recommended: false,
     preservesCurrentAccess: true,
     gainsScopes: ['chrome'],
@@ -68,46 +69,16 @@ const DEFAULT_CATALOG: BillingCatalogEntry[] = [
     changeMode: 'upgrade',
   },
   {
-    planCode: 'plan_shopify',
-    title: 'Shopify',
-    scope: 'shopify',
-    unlockedScopes: ['shopify'],
-    purchaseEnabled: false,
-    current: false,
-    price: null,
-    recommended: false,
-    preservesCurrentAccess: true,
-    gainsScopes: ['shopify'],
-    losesScopes: [],
-    actionKind: 'unavailable',
-    changeMode: 'upgrade',
-  },
-  {
-    planCode: 'plan_wordpress',
-    title: 'WordPress',
-    scope: 'wordpress',
-    unlockedScopes: ['wordpress'],
-    purchaseEnabled: false,
-    current: false,
-    price: null,
-    recommended: false,
-    preservesCurrentAccess: true,
-    gainsScopes: ['wordpress'],
-    losesScopes: [],
-    actionKind: 'unavailable',
-    changeMode: 'upgrade',
-  },
-  {
     planCode: 'plan_all_access',
-    title: 'All Access',
+    title: 'Web + Chrome',
     scope: 'all',
-    unlockedScopes: ['all', 'web', 'chrome', 'shopify', 'wordpress'],
+    unlockedScopes: ['web', 'chrome'],
     purchaseEnabled: true,
     current: false,
-    price: null,
-    recommended: false,
+    price: { unitAmount: 1900, currency: 'usd', interval: 'month', intervalCount: 1 },
+    recommended: true,
     preservesCurrentAccess: true,
-    gainsScopes: ['web', 'chrome', 'shopify', 'wordpress'],
+    gainsScopes: ['web', 'chrome'],
     losesScopes: [],
     actionKind: 'checkout',
     changeMode: 'upgrade',
@@ -117,6 +88,19 @@ const DEFAULT_CATALOG: BillingCatalogEntry[] = [
 function planTitle(t: (key: string, params?: Record<string, string | number>) => string, planCode: PlanCode, fallback: string): string {
   const label = t(`app.planTitles.${planCode}`);
   return label === `app.planTitles.${planCode}` ? fallback : label;
+}
+
+async function runWithConcurrency<T>(items: T[], concurrency: number, worker: (item: T) => Promise<void>): Promise<void> {
+  const queue = [...items];
+  const workerCount = Math.min(Math.max(1, concurrency), queue.length);
+  await Promise.all(
+    Array.from({ length: workerCount }, async () => {
+      while (queue.length) {
+        const item = queue.shift();
+        if (item !== undefined) await worker(item);
+      }
+    }),
+  );
 }
 
 function scopeToPlanCode(scope: ClientScope): PlanCode {
@@ -263,19 +247,21 @@ export function AppPage() {
   const currentPlanEntry = displayCatalog.find((entry) => entry.current);
   const currentPlanTitle = currentPlanEntry?.displayTitle ?? t('app.free');
   const selfServeCatalog = displayCatalog.filter((entry) => SELF_SERVE_PLAN_CODES.includes(entry.planCode));
-  const roadmapCatalog = displayCatalog.filter((entry) => !SELF_SERVE_PLAN_CODES.includes(entry.planCode));
   const recommendedPlan = displayCatalog.find((entry) => entry.recommended) ?? null;
   const currentPlanLabels = currentPlanEntry?.unlockedLabels ?? [];
   const unlockedProducts = useMemo(() => {
     const scopes = entitlements?.all
-      ? (['web', 'chrome', 'shopify', 'wordpress'] as const)
-      : (['web', 'chrome', 'shopify', 'wordpress'] as const).filter((scope) => Boolean(entitlements?.[scope]));
+      ? (['web', 'chrome'] as const)
+      : (['web', 'chrome'] as const).filter((scope) => Boolean(entitlements?.[scope]));
 
     return scopes.map((scope) => scopeLabel(t, scope));
   }, [entitlements, t]);
 
   const [language, setLanguage] = useState('');
   const [context, setContext] = useState('');
+  const [contentTitle, setContentTitle] = useState('');
+  const [focusKeyword, setFocusKeyword] = useState('');
+  const [brand, setBrand] = useState('');
   const [urlInput, setUrlInput] = useState('');
   const [items, setItems] = useState<QueueItem[]>([]);
   const [message, setMessage] = useState('');
@@ -291,6 +277,9 @@ export function AppPage() {
   useEffect(() => {
     setLanguage(localStorage.getItem('atgp_pref_lang') || '');
     setContext(localStorage.getItem('atgp_pref_ctx') || '');
+    setContentTitle(localStorage.getItem('atgp_content_title') || '');
+    setFocusKeyword(localStorage.getItem('atgp_focus_keyword') || '');
+    setBrand(localStorage.getItem('atgp_brand') || '');
   }, []);
 
   useEffect(() => {
@@ -300,6 +289,10 @@ export function AppPage() {
   useEffect(() => {
     localStorage.setItem('atgp_pref_ctx', context);
   }, [context]);
+
+  useEffect(() => localStorage.setItem('atgp_content_title', contentTitle), [contentTitle]);
+  useEffect(() => localStorage.setItem('atgp_focus_keyword', focusKeyword), [focusKeyword]);
+  useEffect(() => localStorage.setItem('atgp_brand', brand), [brand]);
 
   useEffect(() => {
     const userId = auth?.userId || '';
@@ -394,6 +387,9 @@ export function AppPage() {
         const altText = await generateAltText(apiBaseUrl, auth.token, snapshot, {
           language,
           context,
+          contentTitle,
+          focusKeyword,
+          brand,
         });
 
         setItems((current) =>
@@ -433,7 +429,7 @@ export function AppPage() {
         setMessage(text);
       }
     },
-    [apiBaseUrl, auth?.token, auth?.userId, context, ensureSignedIn, hasAccess, language, t],
+    [apiBaseUrl, auth?.token, auth?.userId, brand, contentTitle, context, ensureSignedIn, focusKeyword, hasAccess, language, t],
   );
 
   const onGenerateAll = useCallback(async () => {
@@ -443,9 +439,7 @@ export function AppPage() {
       const ids = items
         .filter((item) => !(item.status === 'done' && item.altText))
         .map((item) => item.id);
-      for (const id of ids) {
-        await generateOne(id);
-      }
+      await runWithConcurrency(ids, GENERATION_CONCURRENCY, generateOne);
     } finally {
       setBusyAll(false);
     }
@@ -959,36 +953,9 @@ export function AppPage() {
               </table>
             </div>
 
-            <div className="roadmap-section stack">
-              <div className="stack" style={{ gap: 4 }}>
-                <h3>{t('app.roadmapTitle')}</h3>
-                <p className="muted" style={{ margin: 0 }}>
-                  {t('app.roadmapSubtitle')}
-                </p>
-              </div>
-
-              <div className="catalog-grid roadmap-grid">
-                {roadmapCatalog.map((entry) => (
-                  <article key={entry.planCode} className="plan-card plan-card-disabled roadmap-card">
-                    <div className="row wrap" style={{ justifyContent: 'space-between' }}>
-                      <h3>{entry.displayTitle}</h3>
-                      <span className="badge badge-waitlist">{t('common.comingSoon')}</span>
-                    </div>
-                    <p>{t(`app.planDescriptions.${entry.planCode}`)}</p>
-                    <div className="scope-pills">
-                      {entry.unlockedLabels.map((label) => (
-                        <span key={`${entry.planCode}-${label}`} className="scope-pill">
-                          {label}
-                        </span>
-                      ))}
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
           </section>
 
-          <section className="panel stack">
+          <section className="panel stack generator-panel">
             <div className="row wrap" style={{ justifyContent: 'space-between' }}>
               <h2>{t('app.generateTitle')}</h2>
               <button
@@ -1072,6 +1039,41 @@ export function AppPage() {
               </div>
 
               <div className="stack">
+                <div className="field-grid">
+                  <div className="stack" style={{ gap: 6 }}>
+                    <label htmlFor="content-title">{t('app.contentTitleLabel')}</label>
+                    <input
+                      id="content-title"
+                      className="input"
+                      value={contentTitle}
+                      onChange={(event) => setContentTitle(event.target.value)}
+                      placeholder={t('app.contentTitlePlaceholder')}
+                      maxLength={120}
+                    />
+                  </div>
+                  <div className="stack" style={{ gap: 6 }}>
+                    <label htmlFor="focus-keyword">{t('app.focusKeywordLabel')}</label>
+                    <input
+                      id="focus-keyword"
+                      className="input"
+                      value={focusKeyword}
+                      onChange={(event) => setFocusKeyword(event.target.value)}
+                      placeholder={t('app.focusKeywordPlaceholder')}
+                      maxLength={80}
+                    />
+                  </div>
+                </div>
+
+                <label htmlFor="brand">{t('app.brandLabel')}</label>
+                <input
+                  id="brand"
+                  className="input"
+                  value={brand}
+                  onChange={(event) => setBrand(event.target.value)}
+                  placeholder={t('app.brandPlaceholder')}
+                  maxLength={80}
+                />
+
                 <label htmlFor="context">{t('common.optionalContext')}</label>
                 <textarea
                   id="context"
@@ -1102,7 +1104,18 @@ export function AppPage() {
 
                         {item.error ? <div className="notice notice-error">{item.error}</div> : null}
 
-                        <div className="item-alt">{item.altText || t('app.noAltTextYet')}</div>
+                        <textarea
+                          className="item-alt item-alt-editable"
+                          aria-label={t('app.generatedAltTextLabel')}
+                          value={item.altText}
+                          placeholder={t('app.noAltTextYet')}
+                          maxLength={125}
+                          onChange={(event) => {
+                            const altText = event.target.value;
+                            setItems((current) => current.map((entry) => (entry.id === item.id ? { ...entry, altText } : entry)));
+                          }}
+                        />
+                        <div className="character-count">{item.altText.length}/125</div>
 
                         <div className="row wrap">
                           <button
