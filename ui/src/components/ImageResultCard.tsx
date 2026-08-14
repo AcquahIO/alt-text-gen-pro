@@ -99,7 +99,7 @@ export function ImageResultCard({ item, fileSizeLabel, onGenerate, onCopy, onDow
             }}
           >
             <img
-              src={item.dataUrl}
+              src={item.dataUrl || item.sourceUrl}
               alt={item.altText || item.name}
               style={{
                 maxWidth: '100%',
@@ -212,7 +212,8 @@ export function ImageResultCard({ item, fileSizeLabel, onGenerate, onCopy, onDow
             <Button
               variant="outline"
               onClick={onDownload}
-              disabled={!item.altText}
+              disabled={!item.altText || !item.dataUrl}
+              title={item.dataUrl ? 'Download with metadata' : 'Metadata download is available for uploaded files only'}
               style={{ borderColor: '#dbeafe', color: '#0b1b44' }}
             >
               <Download className="w-4 h-4" />

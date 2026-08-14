@@ -30,5 +30,6 @@ zip -q -r -FS "${archive}" \
   -x '*.DS_Store'
 
 unzip -t "${archive}" >/dev/null
+node "${repo_root}/scripts/verify-extension-package.mjs" "${archive}"
 echo "Built ${archive}"
 unzip -l "${archive}"

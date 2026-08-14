@@ -154,9 +154,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ ok: true });
       return;
     }
-    if (message?.type === 'generateForDataUrl') {
-      const { dataUrl, context } = message;
-      const { visionDesc, ctx, role, blendedAlt } = await analysePipeline(dataUrl, context);
+    if (message?.type === 'generateForDataUrl' || message?.type === 'generateForImageSource') {
+      const { dataUrl, imageUrl, context } = message;
+      const imageSource = String(dataUrl || imageUrl || '').trim();
+      if (!imageSource) throw new Error('Image source is missing');
+      const { visionDesc, ctx, role, blendedAlt } = await analysePipeline(imageSource, context);
       sendResponse({ ok: true, altText: blendedAlt });
       return;
     }
@@ -198,7 +200,7 @@ function sendToContent(tabId, payload) {
 async function ensureContentScript(tabId) {
   try {
     await chrome.scripting.executeScript({
-      target: { tabId, allFrames: true },
+      target: { tabId },
       files: ['content.js'],
     });
   } catch (e) {
@@ -279,14 +281,20 @@ async function collectPageImagesFromTab(tabId) {
 async function buildPendingEntryFromImageCandidate(candidate, index) {
   const imageUrl = String(candidate?.url || '').trim();
   if (!imageUrl) return null;
-  const dataUrl = await getImageDataUrl(imageUrl);
-  if (!dataUrl) return null;
+  const isDataUrl = /^data:image\//i.test(imageUrl);
+  const isRemoteUrl = /^https?:\/\//i.test(imageUrl);
+  if (!isDataUrl && !isRemoteUrl) return null;
+
+  const dataUrl = isDataUrl
+    ? await ensureMaxDataUrlSize(imageUrl, MAX_BACKEND_BYTES).catch(() => imageUrl)
+    : '';
+  const sourceUrl = isRemoteUrl ? imageUrl : '';
 
   const fallbackName = deriveImageName(imageUrl, index);
   const name = sanitizeImageName(candidate?.name || fallbackName);
   const type = getMimeFromDataUrl(dataUrl) || String(candidate?.type || '') || 'image/jpeg';
-  const size = estimateDataUrlBytes(dataUrl);
-  return { name, type, size, dataUrl };
+  const size = dataUrl ? estimateDataUrlBytes(dataUrl) : 0;
+  return { name, type, size, dataUrl, sourceUrl };
 }
 
 function deriveImageName(url, index) {
@@ -313,32 +321,6 @@ function estimateDataUrlBytes(dataUrl) {
   if (!base64) return 0;
   const padding = (base64.match(/=+$/) || [''])[0].length;
   return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
-}
-
-// Fetch image bytes and convert to data URL for reliable vision input
-async function getImageDataUrl(url) {
-  try {
-    if (!url) return null;
-    if (url.startsWith('data:')) return url;
-    const res = await fetch(url, { credentials: 'omit' });
-    if (!res.ok) throw new Error(`fetch ${res.status}`);
-    const ct = res.headers.get('content-type') || 'image/jpeg';
-    const buf = await res.arrayBuffer();
-    const b64 = arrayBufferToBase64(buf);
-    return `data:${ct};base64,${b64}`;
-  } catch (e) {
-    console.warn('Image fetch failed; falling back to URL', e);
-    return null;
-  }
-}
-
-function arrayBufferToBase64(buffer) {
-  let binary = '';
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
-  // btoa handles binary strings
-  return btoa(binary);
 }
 
 // Pipeline: vision → compose

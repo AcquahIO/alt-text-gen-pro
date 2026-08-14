@@ -97,3 +97,4 @@ With no existing usage baseline, success is evidence of repeated completion rath
 | Model strategy | `gpt-4o`, `detail: low`, server-controlled |
 | Quota | Shared account-level successful-generation limits |
 | Scope | Web + Chrome only |
+| Chrome Store item | Existing listing `gdijbieeagfndfaokkpbcekndoldmilp`; update it rather than creating a duplicate |

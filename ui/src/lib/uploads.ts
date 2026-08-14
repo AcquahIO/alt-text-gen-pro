@@ -56,7 +56,12 @@ export function entriesToItems(entries: PendingUploadEntry[], options: { existin
   const out: UploadItem[] = [];
   const existing = options.existing || [];
   for (const entry of entries) {
-    const match = existing.find((it) => it.dataUrl === entry.dataUrl && it.name === entry.name && it.size === entry.size);
+    const match = existing.find((it) => {
+      const sameSource =
+        (Boolean(it.dataUrl) && it.dataUrl === entry.dataUrl) ||
+        (Boolean(it.sourceUrl) && it.sourceUrl === entry.sourceUrl);
+      return sameSource && it.name === entry.name && it.size === entry.size;
+    });
     if (match) {
       out.push(match);
       continue;

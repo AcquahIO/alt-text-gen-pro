@@ -48,3 +48,9 @@ Set the same secret keys in both `staging` and `production`, with environment-sp
 ## Recommended production safety
 
 Configure required reviewer approval on the GitHub `production` environment to gate deploys from `main`.
+
+The production Chrome listing is:
+
+`https://chromewebstore.google.com/detail/alt-text-generator-pro/gdijbieeagfndfaokkpbcekndoldmilp`
+
+The frontend also uses this URL as its built-in fallback if `VITE_CHROME_LINK` is missing.

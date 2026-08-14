@@ -3,6 +3,7 @@
 !.env.example
 !**/.env.example
 dist/
+ui-dist/
 node_modules/
 .DS_Store
 *.log

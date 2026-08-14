@@ -22,6 +22,7 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+    modulePreload: false,
     outDir: '../ui-dist',
     emptyOutDir: true,
     rollupOptions: {

@@ -4,7 +4,8 @@ export interface PendingUploadEntry {
   name: string;
   type: string;
   size: number;
-  dataUrl: string;
+  dataUrl?: string;
+  sourceUrl?: string;
 }
 
 export interface StoredPendingUploads {

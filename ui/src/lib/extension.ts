@@ -252,11 +252,14 @@ export async function queueActiveTabImagesForFullPage(extras: { language?: strin
   return Number(res.queued || 0);
 }
 
-export async function generateAltTextForDataUrl(dataUrl: string, context: string): Promise<{ altText: string; blendedAlt?: string }>
-{
+export async function generateAltTextForImageSource(
+  source: Pick<PendingUploadEntry, 'dataUrl' | 'sourceUrl'>,
+  context: string,
+): Promise<{ altText: string; blendedAlt?: string }> {
   const res = await sendRuntimeMessage<{ ok: boolean; altText?: string; blendedAlt?: string; error?: string }>({
-    type: 'generateForDataUrl',
-    dataUrl,
+    type: 'generateForImageSource',
+    dataUrl: source.dataUrl || '',
+    imageUrl: source.sourceUrl || '',
     context: { userContext: context },
   });
   if (!res?.ok) {
@@ -265,7 +268,17 @@ export async function generateAltTextForDataUrl(dataUrl: string, context: string
   return { altText: res.blendedAlt || res.altText || '' };
 }
 
+export async function generateAltTextForDataUrl(
+  dataUrl: string,
+  context: string,
+): Promise<{ altText: string; blendedAlt?: string }> {
+  return generateAltTextForImageSource({ dataUrl }, context);
+}
+
 export async function downloadWithMetadata(item: UploadItem, altText: string): Promise<void> {
+  if (!item.dataUrl) {
+    throw new Error('Metadata download is available for uploaded files only.');
+  }
   const arrayBuffer = item.file ? await item.file.arrayBuffer() : dataUrlToArrayBuffer(item.dataUrl);
   const blob = await embedAltTextIntoImage(arrayBuffer, item.type || '', altText);
   const url = URL.createObjectURL(blob);

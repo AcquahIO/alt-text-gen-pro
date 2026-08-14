@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/sonner';
 import {
   consumePendingUploads,
   downloadWithMetadata,
-  generateAltTextForDataUrl,
+  generateAltTextForImageSource,
   getPreferredLanguage,
   getSavedContext,
   getRuntimeUrl,
@@ -66,7 +66,7 @@ export default function FullPageApp() {
       );
       if (!snapshot) return;
       try {
-        const { altText } = await generateAltTextForDataUrl(snapshot.dataUrl, context);
+        const { altText } = await generateAltTextForImageSource(snapshot, context);
         updateItem(id, (item) => ({ ...item, altText, status: 'done', error: undefined }));
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);

@@ -21,11 +21,13 @@ const OG_LOCALE_MAP = {
   'en-GB': 'en_GB',
   'en-US': 'en_US',
 };
+const DEFAULT_CHROME_STORE_URL =
+  'https://chromewebstore.google.com/detail/alt-text-generator-pro/gdijbieeagfndfaokkpbcekndoldmilp';
 
 const appOrigin = normalizeOrigin(process.env.VITE_APP_ORIGIN) ?? 'https://your-domain.com';
 const isStaging = process.env.VITE_STAGING === 'true';
 const channelLinks = {
-  chrome: process.env.VITE_CHROME_LINK || '',
+  chrome: process.env.VITE_CHROME_LINK || DEFAULT_CHROME_STORE_URL,
   shopify: process.env.VITE_SHOPIFY_LINK || '#shopify-waitlist',
   wordpress: process.env.VITE_WORDPRESS_LINK || '#wordpress-waitlist',
 };
@@ -282,7 +284,7 @@ function renderApp(locale) {
 function renderCenterCard(locale, titleKey, bodyKey) {
   return `
       <div class="center-card">
-        <h1 style="margin:0;font-family:'Space Grotesk',sans-serif">${escapeHtml(t(locale, titleKey))}</h1>
+        <h1 style="margin:0;font-family:var(--font-display)">${escapeHtml(t(locale, titleKey))}</h1>
         <p class="muted" style="margin-top:12px">${escapeHtml(t(locale, bodyKey))}</p>
       </div>
   `;

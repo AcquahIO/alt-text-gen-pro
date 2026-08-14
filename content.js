@@ -1,6 +1,8 @@
 // content.js
 // Collects page/image context and renders a lightweight modal for copy/regenerate.
 
+const ALT_TEXT_MAX_LENGTH = 125;
+
 // Utility: find the best-matching <img> for a given srcUrl
 function findImageBySrc(srcUrl) {
   const target = new URL(srcUrl, document.baseURI).href;
@@ -474,6 +476,7 @@ function renderAltTextModal(initialText, srcUrl, isError) {
   textarea.style.outline = 'none';
   textarea.style.boxSizing = 'border-box';
   textarea.style.resize = 'vertical';
+  textarea.maxLength = ALT_TEXT_MAX_LENGTH;
   textarea.id = 'atg-modal-textarea';
   card.appendChild(textarea);
 
@@ -596,8 +599,8 @@ function renderAltTextModal(initialText, srcUrl, isError) {
 
 function syncCounter(counterEl, value) {
   const len = String(value || '').length;
-  counterEl.textContent = `${len}/120`;
-  counterEl.style.color = len > 120 ? '#b91c1c' : '#64748b';
+  counterEl.textContent = `${len}/${ALT_TEXT_MAX_LENGTH}`;
+  counterEl.style.color = len > ALT_TEXT_MAX_LENGTH ? '#b91c1c' : '#64748b';
 }
 
 function styleBtn(btn, variant = 'primary') {
