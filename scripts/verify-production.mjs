@@ -44,6 +44,29 @@ async function check(path, options = {}) {
   }
 
   console.log(`PASS ${response.status} ${url}`);
+
+  return { body, response, url };
+}
+
+async function checkWebAssets(pagePath) {
+  const { body } = await check(pagePath, {
+    base: webBase,
+    contentType: 'text/html',
+    includes: 'Alt Text Generator Pro',
+    headers: { 'cache-control': 'no-cache' },
+  });
+  const assetPaths = [...body.matchAll(/(?:src|href)=["'](\/assets\/[^"']+)["']/g)].map(
+    ([, path]) => path,
+  );
+
+  if (assetPaths.length === 0) {
+    throw new Error(`${new URL(pagePath, webBase)} did not reference any build assets`);
+  }
+
+  for (const assetPath of new Set(assetPaths)) {
+    const expectedType = assetPath.endsWith('.css') ? 'text/css' : 'javascript';
+    await check(assetPath, { base: webBase, contentType: expectedType });
+  }
 }
 
 await check('/healthz', { contentType: 'application/json', includes: '"ok":true' });
@@ -51,8 +74,9 @@ await check('/readyz', { contentType: 'application/json', includes: '"ok":true' 
 await check('/privacy', { contentType: 'text/html', includes: 'Privacy, in plain language.' });
 await check('/terms', { contentType: 'text/html', includes: 'Terms built for a useful product.' });
 await check('/api/subscription-status', { status: 401, contentType: 'application/json' });
-await check('/en-GB/', { base: webBase, contentType: 'text/html', includes: 'Alt Text Generator Pro' });
+await checkWebAssets('/en-GB/');
 await check('/en-GB/app', { base: webBase, contentType: 'text/html', includes: 'Alt Text Generator Pro' });
+await check('/assets/production-smoke-missing.js', { base: webBase, status: 404 });
 await check('/robots.txt', { base: webBase, contentType: 'text/plain', includes: 'Sitemap:' });
 await check('/sitemap.xml', { base: webBase, contentType: 'xml', includes: '<urlset' });
 

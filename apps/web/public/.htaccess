@@ -58,6 +58,14 @@
   RewriteRule ^$ /en-GB/ [R=302,L]
 
   RewriteRule ^index\.html$ - [L]
+
+  # Hashed build assets must never fall through to the HTML app shell. Returning
+  # a real 404 makes stale cached pages fail visibly instead of serving HTML with
+  # a JavaScript or stylesheet URL (which browsers reject as a MIME mismatch).
+  RewriteCond %{REQUEST_URI} ^/assets/ [NC]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^ - [R=404,L]
+
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
