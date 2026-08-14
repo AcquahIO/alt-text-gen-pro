@@ -165,19 +165,19 @@
       "plan_chrome": "Génération au clic droit, collecte d’images de page et flux pleine page dans l’extension.",
       "plan_shopify": "Flux reliés à la boutique et génération avec droits pour les équipes Shopify.",
       "plan_wordpress": "Flux de génération WordPress avec compte partagé.",
-      "plan_all_access": "Un seul abonnement qui débloque le web, Chrome, Shopify et WordPress."
+      "plan_all_access": "Un seul abonnement pour l’application web et l’extension Chrome."
     },
     "planTitles": {
       "plan_web": "Web",
       "plan_chrome": "Extension Chrome",
       "plan_shopify": "Shopify",
       "plan_wordpress": "WordPress",
-      "plan_all_access": "Accès complet"
+      "plan_all_access": "Web + Chrome"
     },
     "planBestFor": {
       "plan_web": "Importer et générer du texte alternatif dans l’app web.",
       "plan_chrome": "Utiliser la génération au clic droit et à l’échelle de la page dans Chrome.",
-      "plan_all_access": "Conserver votre accès actuel et débloquer tous les clients avec un seul compte."
+      "plan_all_access": "Utilisez l’application web et l’extension Chrome avec un seul compte."
     },
     "usage": {
       "hour": "Heure",

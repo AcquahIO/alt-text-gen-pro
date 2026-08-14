@@ -165,19 +165,19 @@
       "plan_chrome": "Generierung per Rechtsklick, Sammeln von Seitenbildern und der Vollseiten-Workflow der Erweiterung.",
       "plan_shopify": "Shop-verbundene Produkt-Workflows und entitlement-gesteuerte Generierung für Shopify-Teams.",
       "plan_wordpress": "Generierungs-Workflows in WordPress mit gemeinsamem Konto.",
-      "plan_all_access": "Ein Abonnement, das Web, Chrome, Shopify und WordPress freischaltet."
+      "plan_all_access": "Ein Abonnement für Web-App und Chrome-Erweiterung."
     },
     "planTitles": {
       "plan_web": "Web",
       "plan_chrome": "Chrome-Erweiterung",
       "plan_shopify": "Shopify",
       "plan_wordpress": "WordPress",
-      "plan_all_access": "Komplettzugang"
+      "plan_all_access": "Web + Chrome"
     },
     "planBestFor": {
       "plan_web": "Dateien hochladen und Alt-Text direkt in der Web-App generieren.",
       "plan_chrome": "Seitenweite und Rechtsklick-Generierung in Chrome nutzen.",
-      "plan_all_access": "Ihren aktuellen Zugriff behalten und alle Clients mit einem Konto freischalten."
+      "plan_all_access": "Web-App und Chrome-Erweiterung mit einem Konto nutzen."
     },
     "usage": {
       "hour": "Stunde",

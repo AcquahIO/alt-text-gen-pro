@@ -165,19 +165,19 @@
       "plan_chrome": "توليد بالنقر الأيمن، وجمع صور الصفحة، وسير عمل الصفحة الكاملة في الإضافة.",
       "plan_shopify": "سير عمل مرتبط بالمتجر وتوليد مدعوم بالصلاحيات لفرق Shopify.",
       "plan_wordpress": "سير عمل للتوليد داخل WordPress باستخدام حساب مشترك.",
-      "plan_all_access": "اشتراك واحد يفعّل الويب وChrome وShopify وWordPress."
+      "plan_all_access": "اشتراك واحد يفعّل تطبيق الويب وإضافة Chrome."
     },
     "planTitles": {
       "plan_web": "الويب",
       "plan_chrome": "إضافة Chrome",
       "plan_shopify": "Shopify",
       "plan_wordpress": "WordPress",
-      "plan_all_access": "الوصول الكامل"
+      "plan_all_access": "الويب + Chrome"
     },
     "planBestFor": {
       "plan_web": "رفع الملفات وإنشاء النص البديل داخل تطبيق الويب.",
       "plan_chrome": "استخدام التوليد على مستوى الصفحة وبالنقر الأيمن في Chrome.",
-      "plan_all_access": "الحفاظ على وصولك الحالي وتفعيل جميع العملاء بحساب واحد."
+      "plan_all_access": "استخدم تطبيق الويب وإضافة Chrome بحساب واحد."
     },
     "usage": {
       "hour": "الساعة",

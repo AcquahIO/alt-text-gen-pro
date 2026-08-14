@@ -165,19 +165,19 @@
       "plan_chrome": "Generación con clic derecho, recopilación de imágenes de la página y flujo de página completa en la extensión.",
       "plan_shopify": "Flujos conectados a la tienda y generación con permisos para equipos de Shopify.",
       "plan_wordpress": "Flujos de generación en WordPress con cuenta compartida.",
-      "plan_all_access": "Una sola suscripción que desbloquea web, Chrome, Shopify y WordPress."
+      "plan_all_access": "Una suscripción para la app web y la extensión de Chrome."
     },
     "planTitles": {
       "plan_web": "Web",
       "plan_chrome": "Extensión de Chrome",
       "plan_shopify": "Shopify",
       "plan_wordpress": "WordPress",
-      "plan_all_access": "Acceso total"
+      "plan_all_access": "Web + Chrome"
     },
     "planBestFor": {
       "plan_web": "Sube archivos y genera texto alternativo dentro de la app web.",
       "plan_chrome": "Usa la generación por página y con clic derecho en Chrome.",
-      "plan_all_access": "Mantén tu acceso actual y desbloquea todos los clientes con una sola cuenta."
+      "plan_all_access": "Usa la app web y la extensión de Chrome con una sola cuenta."
     },
     "usage": {
       "hour": "Hora",

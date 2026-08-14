@@ -165,19 +165,19 @@
       "plan_chrome": "支持右键生成、页面图片收集以及扩展中的整页工作流。",
       "plan_shopify": "面向 Shopify 团队的店铺工作流与权限控制生成。",
       "plan_wordpress": "使用共享账户在 WordPress 中进行生成工作流。",
-      "plan_all_access": "一个订阅即可解锁网页、Chrome、Shopify 和 WordPress。"
+      "plan_all_access": "一份订阅即可使用网页应用和 Chrome 扩展。"
     },
     "planTitles": {
       "plan_web": "网页应用",
       "plan_chrome": "Chrome 扩展",
       "plan_shopify": "Shopify",
       "plan_wordpress": "WordPress",
-      "plan_all_access": "全量访问"
+      "plan_all_access": "网页 + Chrome"
     },
     "planBestFor": {
       "plan_web": "在网页应用中上传并生成替代文本。",
       "plan_chrome": "在 Chrome 中使用整页和右键生成功能。",
-      "plan_all_access": "使用一个账户保留当前访问权限并解锁所有端。"
+      "plan_all_access": "使用一个账户访问网页应用和 Chrome 扩展。"
     },
     "usage": {
       "hour": "小时",

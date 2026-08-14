@@ -60,12 +60,13 @@ Given an image and optional product/page context, return one natural alt attribu
 ## Launch acceptance criteria
 
 - Backend lint, unit tests, TypeScript build, Prisma generation, and production migration pass.
+- Production `/healthz` confirms the process is live; `/readyz` confirms the database is reachable.
 - Web and extension production builds pass with no browser console errors in tested core pages.
 - Chrome package contains only required MV3 source, UI bundles, icons, and locale files.
 - Store screenshot is 1280×800; promotional assets are 440×280 and 1400×560.
 - Chrome listing copy, single-purpose statement, permissions, and data-use disclosures match actual behaviour.
 - Production `/privacy`, `/terms`, auth, subscription status, and generation endpoints are reachable.
-- A reviewer account can exercise Chrome generation without entering payment details.
+- A time-limited reviewer account can exercise Chrome generation without entering payment details.
 
 ## First 30-day learning plan
 
