@@ -46,6 +46,7 @@ jobs:
           sudo apt-get install -y lftp
 
       - name: Deploy via SFTP (staging)
+        timeout-minutes: 4
         env:
           SG_HOST: ${{ secrets.SG_HOST }}
           SG_PORT: ${{ secrets.SG_PORT }}
@@ -53,7 +54,7 @@ jobs:
           SG_PASSWORD: ${{ secrets.SG_PASSWORD }}
           SG_REMOTE_PATH: ${{ secrets.SG_REMOTE_PATH }}
         run: |
-          lftp -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; open -u ${SG_USER},${SG_PASSWORD} ftp://${SG_HOST}:${SG_PORT}; mirror -R --delete --verbose dist ${SG_REMOTE_PATH}; bye"
+          timeout --signal=TERM 180s lftp -e "set cmd:fail-exit true; set net:timeout 15; set net:max-retries 2; set net:reconnect-interval-base 5; set ftp:ssl-force true; set ftp:ssl-protect-data true; set ftp:passive-mode true; open -u ${SG_USER},${SG_PASSWORD} ftp://${SG_HOST}:${SG_PORT}; mirror -R --delete --verbose dist ${SG_REMOTE_PATH}; bye"
 
   deploy_production:
     if: github.ref == 'refs/heads/main'
@@ -90,6 +91,7 @@ jobs:
           sudo apt-get install -y lftp
 
       - name: Deploy via SFTP (production)
+        timeout-minutes: 4
         env:
           SG_HOST: ${{ secrets.SG_HOST }}
           SG_PORT: ${{ secrets.SG_PORT }}
@@ -97,4 +99,4 @@ jobs:
           SG_PASSWORD: ${{ secrets.SG_PASSWORD }}
           SG_REMOTE_PATH: ${{ secrets.SG_REMOTE_PATH }}
         run: |
-          lftp -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; open -u ${SG_USER},${SG_PASSWORD} ftp://${SG_HOST}:${SG_PORT}; mirror -R --delete --verbose dist ${SG_REMOTE_PATH}; bye"
+          timeout --signal=TERM 180s lftp -e "set cmd:fail-exit true; set net:timeout 15; set net:max-retries 2; set net:reconnect-interval-base 5; set ftp:ssl-force true; set ftp:ssl-protect-data true; set ftp:passive-mode true; open -u ${SG_USER},${SG_PASSWORD} ftp://${SG_HOST}:${SG_PORT}; mirror -R --delete --verbose dist ${SG_REMOTE_PATH}; bye"
