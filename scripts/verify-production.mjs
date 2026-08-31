@@ -75,9 +75,22 @@ async function checkWebAssets(pagePath) {
   }
 
   for (const assetPath of new Set(assetPaths)) {
-    const expectedType = assetPath.endsWith('.css') ? 'text/css' : 'javascript';
+    const expectedType = expectedAssetContentType(assetPath);
     await check(assetPath, { base: webBase, contentType: expectedType });
   }
+}
+
+function expectedAssetContentType(assetPath) {
+  const pathname = new URL(assetPath, webBase).pathname.toLowerCase();
+  if (pathname.endsWith('.css')) return 'text/css';
+  if (pathname.endsWith('.js')) return 'javascript';
+  if (pathname.endsWith('.png')) return 'image/png';
+  if (pathname.endsWith('.jpg') || pathname.endsWith('.jpeg')) return 'image/jpeg';
+  if (pathname.endsWith('.webp')) return 'image/webp';
+  if (pathname.endsWith('.avif')) return 'image/avif';
+  if (pathname.endsWith('.svg')) return 'image/svg+xml';
+  if (pathname.endsWith('.woff2')) return 'font/woff2';
+  throw new Error(`No expected content type configured for ${assetPath}`);
 }
 
 await check('/healthz', { contentType: 'application/json', includes: '"ok":true' });
