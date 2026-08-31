@@ -1,6 +1,6 @@
 export interface ChannelLink {
-  id: 'chrome' | 'shopify' | 'wordpress';
-  status: 'live' | 'waitlist';
+  id: 'chrome';
+  status: 'live';
   href: string;
 }
 

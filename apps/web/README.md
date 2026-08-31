@@ -1,14 +1,13 @@
-# Alt Text Generator Pro Web
+# Alt Text Generator Pro Product Website
 
-React web app for Alt Text Generator Pro.
+React product website for Alt Text Generator Pro. The customer-facing product is the Chrome extension; agent use is presented as a separately metered API and MCP service.
 
 ## Routes
 
-- `/` landing page
-- `/app` authenticated generator app
-- `/app/auth/callback` auth return route
-- `/app/billing/success` billing success return route
-- `/app/billing/cancel` billing cancel return route
+- `/:locale/` Chrome extension landing and pricing page
+- `/:locale/api` agent API and MCP product page
+- `/api` and `/mcp` locale-aware entry routes
+- legacy `/app/*` routes redirect to the localised landing page
 
 ## Local development
 
@@ -22,7 +21,7 @@ React web app for Alt Text Generator Pro.
 
 - `npm run build`
 
-Vite copies `public/.htaccess` into `dist/` for SiteGround SPA rewrites.
+Vite copies `public/.htaccess` into `dist/` for SiteGround locale redirects, canonical slashes, security headers, and real 404 handling.
 
 ## Deployment model
 
@@ -38,18 +37,12 @@ Each environment (`staging`, `production`) should define:
 - `SG_USER`
 - `SG_PASSWORD`
 - `SG_REMOTE_PATH`
-- `VITE_API_BASE_URL`
 - `VITE_APP_ORIGIN`
+- `VITE_AGENT_API_ORIGIN`
 - `VITE_CHROME_LINK`
-- `VITE_SHOPIFY_LINK`
-- `VITE_WORDPRESS_LINK`
+
+The production build also emits `robots.txt`, `sitemap.xml`, `llms.txt`, and `/.well-known/mcp.json`; run `npm run verify:seo` after building to validate their links and SEO cardinality.
 
 SiteGround upload secrets in this repo are configured for an FTP account on port `21` and the workflow uses FTP over TLS via `lftp`.
 
-## Backend requirements (Heroku)
-
-Set backend env vars to allow web domain callbacks and CORS:
-
-- `AUTH_ALLOWED_REDIRECT_ORIGINS`
-- `CORS_ALLOWED_ORIGINS`
-- `WEB_ALLOWED_RETURN_ORIGINS`
+The website does not contain a customer generator, account dashboard, or checkout flow. Chrome account and billing capabilities stay inside the extension.

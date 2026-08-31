@@ -13,7 +13,9 @@ interface SeoPayload {
 }
 
 function upsertMeta(attribute: 'name' | 'property', value: string, content: string): void {
-  let meta = document.head.querySelector(`meta[${attribute}="${value}"]`) as HTMLMetaElement | null;
+  const matches = Array.from(document.head.querySelectorAll(`meta[${attribute}="${value}"]`)) as HTMLMetaElement[];
+  let meta = matches.shift() ?? null;
+  matches.forEach((duplicate) => duplicate.remove());
   if (!meta) {
     meta = document.createElement('meta');
     meta.setAttribute(attribute, value);
@@ -26,7 +28,9 @@ function upsertLink(rel: string, href: string, hreflang?: string): void {
   const selector = hreflang
     ? `link[rel="${rel}"][hreflang="${hreflang}"]`
     : `link[rel="${rel}"]:not([hreflang])`;
-  let link = document.head.querySelector(selector) as HTMLLinkElement | null;
+  const matches = Array.from(document.head.querySelectorAll(selector)) as HTMLLinkElement[];
+  let link = matches.shift() ?? null;
+  matches.forEach((duplicate) => duplicate.remove());
   if (!link) {
     link = document.createElement('link');
     link.rel = rel;
@@ -37,7 +41,9 @@ function upsertLink(rel: string, href: string, hreflang?: string): void {
 }
 
 function upsertJsonLd(payload: Record<string, unknown>): void {
-  let script = document.head.querySelector('script[data-seo-jsonld="true"]') as HTMLScriptElement | null;
+  const matches = Array.from(document.head.querySelectorAll('script[type="application/ld+json"]')) as HTMLScriptElement[];
+  let script = matches.find((candidate) => candidate.dataset.seoJsonld === 'true') ?? matches[0] ?? null;
+  matches.filter((candidate) => candidate !== script).forEach((duplicate) => duplicate.remove());
   if (!script) {
     script = document.createElement('script');
     script.type = 'application/ld+json';
@@ -55,56 +61,54 @@ function createStructuredData(
   description: string,
   brandName: string,
 ) {
-  if (routeId === 'landing') {
-    return {
-      '@context': 'https://schema.org',
-      '@type': 'SoftwareApplication',
-      name: brandName,
-      applicationCategory: 'BusinessApplication',
-      operatingSystem: 'Web',
-      inLanguage: locale,
-      url,
-      description,
-      offers: {
-        '@type': 'AggregateOffer',
-        lowPrice: '10',
-        highPrice: '19',
-        priceCurrency: 'USD',
-        offerCount: 3,
-      },
-    };
-  }
-
-  if (routeId === 'app') {
-    return {
-      '@context': 'https://schema.org',
-      '@type': 'WebApplication',
-      name: title,
-      applicationCategory: 'BusinessApplication',
-      operatingSystem: 'Web',
-      inLanguage: locale,
-      url,
-      description,
-      isPartOf: {
-        '@type': 'WebSite',
+  const organizationId = `${APP_ORIGIN}/#organization`;
+  const websiteId = `${APP_ORIGIN}/#website`;
+  const pageEntity = routeId === 'landing'
+    ? {
+        '@type': 'SoftwareApplication',
+        '@id': `${url}#software`,
         name: brandName,
-        url: `${APP_ORIGIN}${buildRoutePath(DEFAULT_LOCALE, 'landing')}`,
-      },
-    };
-  }
-
+        applicationCategory: 'BusinessApplication',
+        operatingSystem: 'Google Chrome',
+        inLanguage: locale,
+        url,
+        description,
+        provider: { '@id': organizationId },
+        isPartOf: { '@id': websiteId },
+        offers: { '@type': 'Offer', price: '10', priceCurrency: 'USD' },
+      }
+    : {
+        '@type': 'Service',
+        '@id': `${url}#service`,
+        name: title,
+        serviceType: 'Metered alt text generation API and MCP service',
+        inLanguage: locale,
+        url,
+        description,
+        provider: { '@id': organizationId },
+        isPartOf: { '@id': websiteId },
+        areaServed: 'Worldwide',
+      };
   return {
     '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    name: title,
-    inLanguage: locale,
-    url,
-    description,
-    isPartOf: {
-      '@type': 'WebSite',
-      name: brandName,
-      url: `${APP_ORIGIN}${buildRoutePath(DEFAULT_LOCALE, 'landing')}`,
-    },
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': organizationId,
+        name: brandName,
+        url: `${APP_ORIGIN}${buildRoutePath(DEFAULT_LOCALE, 'landing')}`,
+        logo: { '@type': 'ImageObject', url: `${APP_ORIGIN}/icon-512.png`, width: 512, height: 512 },
+      },
+      {
+        '@type': 'WebSite',
+        '@id': websiteId,
+        name: brandName,
+        url: `${APP_ORIGIN}${buildRoutePath(DEFAULT_LOCALE, 'landing')}`,
+        publisher: { '@id': organizationId },
+        inLanguage: SUPPORTED_LOCALES,
+      },
+      pageEntity,
+    ],
   };
 }
 
@@ -116,10 +120,7 @@ function getSeoPayload(
 ): SeoPayload {
   const seoKeyMap: Record<RouteId, string> = {
     landing: 'landing',
-    app: 'app',
-    authCallback: 'authCallback',
-    billingSuccess: 'billingSuccess',
-    billingCancel: 'billingCancel',
+    agentApi: 'agentApi',
   };
   const key = seoKeyMap[routeId];
   const title = t(`seo.${key}.title`);
@@ -153,20 +154,24 @@ export function useSeo(routeId: RouteId): void {
     upsertMeta('property', 'og:description', payload.description);
     upsertMeta('property', 'og:url', payload.canonicalUrl);
     upsertMeta('property', 'og:locale', toOgLocale(locale));
-    const socialImage = `${APP_ORIGIN}/assets/seo-alt-text-hero.jpg`;
+    const socialImage = `${APP_ORIGIN}/social-card.png`;
     upsertMeta('property', 'og:image', socialImage);
-    upsertMeta('property', 'og:image:alt', 'Light oak dining chair against a warm studio background');
+    upsertMeta('property', 'og:image:type', 'image/png');
+    upsertMeta('property', 'og:image:width', '1200');
+    upsertMeta('property', 'og:image:height', '630');
+    upsertMeta('property', 'og:image:alt', 'Alt Text Generator Pro for Chrome and agent workflows');
     upsertMeta('name', 'twitter:card', 'summary_large_image');
     upsertMeta('name', 'twitter:title', payload.title);
     upsertMeta('name', 'twitter:description', payload.description);
     upsertMeta('name', 'twitter:url', payload.canonicalUrl);
     upsertMeta('name', 'twitter:image', socialImage);
+    upsertMeta('name', 'twitter:image:alt', 'Alt Text Generator Pro for Chrome and agent workflows');
     upsertLink('canonical', payload.canonicalUrl);
 
     for (const altLocale of SUPPORTED_LOCALES) {
       upsertLink('alternate', `${APP_ORIGIN}${buildRoutePath(altLocale, routeId)}`, toLanguageTag(altLocale));
     }
-    upsertLink('alternate', `${APP_ORIGIN}${buildRoutePath(DEFAULT_LOCALE, 'landing')}`, 'x-default');
+    upsertLink('alternate', `${APP_ORIGIN}${buildRoutePath(DEFAULT_LOCALE, routeId)}`, 'x-default');
     upsertJsonLd(payload.jsonLd);
   }, [locale, routeId, t]);
 }

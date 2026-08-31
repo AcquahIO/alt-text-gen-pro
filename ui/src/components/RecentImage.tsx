@@ -44,123 +44,45 @@ export function RecentImage({ items, onClear }: RecentImageProps) {
   if (!items.length) return null;
 
   return (
-    <div
-      className="rounded-2xl border bg-card"
-      style={{
-        borderColor: '#dbeafe',
-        background: '#ffffff',
-        boxShadow: '0 2px 12px rgba(30, 58, 138, 0.06)',
-        padding: 16,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-      }}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <h2 className="text-sm font-semibold" style={{ color: '#0b1b44', lineHeight: 1.2 }}>
-            Recent from right-click
-          </h2>
-          <p className="text-xs text-muted-foreground">
+    <section className="command-recent" aria-labelledby="recent-results-heading">
+      <div className="command-recent__header">
+        <div>
+          <h2 id="recent-results-heading" className="command-eyebrow">Recent from right-click</h2>
+          <p className="command-helper" style={{ marginTop: 4 }}>
             {items.length} recent result{items.length === 1 ? '' : 's'}{totalPages > 1 ? ` • Page ${safePage + 1} of ${totalPages}` : ''}
           </p>
         </div>
         <Button
-          variant="outline"
+          className="command-secondary"
           size="sm"
           onClick={onClear}
-          style={{
-            borderColor: '#dbeafe',
-            color: '#334155',
-            background: '#f8fbff',
-            borderRadius: 10,
-            minHeight: 34,
-            paddingInline: 12,
-          }}
         >
-          <X className="w-4 h-4 mr-1.5" />
+          <X className="w-3.5 h-3.5" />
           Clear
         </Button>
       </div>
 
-      <div
-        ref={listRef}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 10,
-          maxHeight: 220,
-          overflowY: 'auto',
-          paddingRight: 2,
-        }}
-      >
+      <div ref={listRef} className="command-recent__list">
         {pageItems.map((item) => {
           const key = item.id || item.srcUrl || item.altText;
           const copied = copiedId === key;
           return (
-            <div
-              key={key}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '52px minmax(0, 1fr) auto',
-                alignItems: 'center',
-                gap: 12,
-                border: '1px solid #dbeafe',
-                borderRadius: 14,
-                background: '#f8fbff',
-                padding: 10,
-              }}
-            >
-              <img
-                src={item.srcUrl}
-                alt={item.altText}
-                className="object-cover flex-shrink-0 border"
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 10,
-                  borderColor: '#bfdbfe',
-                  background: '#ffffff',
-                }}
-              />
-              <div className="min-w-0">
-                <p
-                  className="text-sm break-words"
-                  style={{
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                    lineHeight: 1.35,
-                    color: '#0f172a',
-                    margin: 0,
-                  }}
-                >
-                  {item.altText}
-                </p>
-              </div>
+            <div key={key} className="command-recent__row">
+              <img src={item.srcUrl} alt={item.altText} />
+              <p className="command-recent__text">{item.altText}</p>
               <Button
-                variant="outline"
+                className="command-secondary"
                 size="sm"
                 onClick={() => copyToClipboard(item)}
-                style={{
-                  borderColor: '#dbeafe',
-                  borderRadius: 10,
-                  minHeight: 36,
-                  minWidth: 86,
-                  paddingInline: 12,
-                  color: '#0b1b44',
-                  background: '#ffffff',
-                }}
               >
                 {copied ? (
                   <>
-                    <Check className="w-4 h-4 mr-1.5" />
+                    <Check className="w-3.5 h-3.5" />
                     Copied
                   </>
                 ) : (
                   <>
-                    <Copy className="w-4 h-4 mr-1.5" />
+                    <Copy className="w-3.5 h-3.5" />
                     Copy
                   </>
                 )}
@@ -171,51 +93,30 @@ export function RecentImage({ items, onClear }: RecentImageProps) {
       </div>
 
       {totalPages > 1 && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 8,
-          }}
-        >
+        <div className="flex items-center justify-between gap-2">
           <Button
-            variant="outline"
+            className="command-secondary"
             size="sm"
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={safePage === 0}
-            style={{
-              borderColor: '#dbeafe',
-              color: '#0b1b44',
-              borderRadius: 10,
-              minHeight: 34,
-              background: '#ffffff',
-            }}
           >
-            <ChevronLeft className="w-4 h-4 mr-1.5" />
+            <ChevronLeft className="w-3.5 h-3.5" />
             Previous
           </Button>
-          <div className="text-xs text-muted-foreground">
+          <div className="command-shortcut">
             Showing {pageStart + 1}-{Math.min(items.length, pageStart + ITEMS_PER_PAGE)} of {items.length}
           </div>
           <Button
-            variant="outline"
+            className="command-secondary"
             size="sm"
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             disabled={safePage >= totalPages - 1}
-            style={{
-              borderColor: '#dbeafe',
-              color: '#0b1b44',
-              borderRadius: 10,
-              minHeight: 34,
-              background: '#ffffff',
-            }}
           >
             Next
-            <ChevronRight className="w-4 h-4 ml-1.5" />
+            <ChevronRight className="w-3.5 h-3.5" />
           </Button>
         </div>
       )}
-    </div>
+    </section>
   );
 }

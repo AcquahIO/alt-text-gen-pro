@@ -236,31 +236,72 @@ function deriveImageName(url, fallbackIndex) {
 }
 
 function collectPageImages(limit = 50) {
-  const seen = new Set();
-  const images = [];
-  let idx = 0;
+  const candidates = [];
+  const seenElements = new Set();
 
-  for (const img of document.images) {
-    const raw = img.currentSrc || img.src || '';
-    if (!raw) continue;
+  const add = (raw, element, kind = 'image') => {
+    if (!raw || !(element instanceof Element)) return;
     let url = '';
     try {
       url = new URL(raw, document.baseURI).href;
     } catch {
-      continue;
+      return;
     }
-    if (!url || seen.has(url)) continue;
-    seen.add(url);
-    images.push({
-      url,
-      name: deriveImageName(url, idx),
-      type: guessMimeFromUrl(url),
-    });
-    idx += 1;
-    if (images.length >= limit) break;
+    if (!/^https?:|^data:image\//i.test(url)) return;
+
+    let rect;
+    let style;
+    try {
+      rect = element.getBoundingClientRect();
+      style = window.getComputedStyle(element);
+    } catch {
+      return;
+    }
+    if (!rect || rect.width < 24 || rect.height < 24) return;
+    if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) return;
+
+    const area = Math.min(rect.width * rect.height, 2_000_000);
+    const inViewport = rect.bottom > 0 && rect.right > 0 && rect.top < window.innerHeight && rect.left < window.innerWidth;
+    candidates.push({ url, element, kind, score: area + (inViewport ? 2_000_000 : 0) });
+  };
+
+  for (const img of document.images) {
+    seenElements.add(img);
+    add(img.currentSrc || img.src || '', img, 'image');
   }
 
-  return images;
+  for (const video of document.querySelectorAll('video[poster]')) {
+    add(video.getAttribute('poster'), video, 'video poster');
+  }
+
+  let inspected = 0;
+  for (const element of document.querySelectorAll('body *')) {
+    if (inspected >= 2_000) break;
+    inspected += 1;
+    if (seenElements.has(element)) continue;
+    let background = '';
+    try {
+      background = extractFirstCssUrl(window.getComputedStyle(element).backgroundImage);
+    } catch {}
+    if (background) add(background, element, 'background image');
+  }
+
+  const seenUrls = new Set();
+  return candidates
+    .sort((a, b) => b.score - a.score)
+    .filter((candidate) => {
+      if (seenUrls.has(candidate.url)) return false;
+      seenUrls.add(candidate.url);
+      return true;
+    })
+    .slice(0, Math.max(1, Math.min(Number(limit) || 50, 50)))
+    .map((candidate, index) => ({
+      url: candidate.url,
+      name: deriveImageName(candidate.url, index),
+      type: guessMimeFromUrl(candidate.url),
+      kind: candidate.kind,
+      context: buildDomContext(candidate.element, candidate.url),
+    }));
 }
 
 function getMetaDescription() {
@@ -335,6 +376,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 let modalRoot = null;
+let modalPreviousFocus = null;
+let modalKeydownHandler = null;
 
 function buildDomContext(img, srcUrl) {
   const ctx = {
@@ -382,8 +425,23 @@ function fallbackNearbyText(el) {
   return blocks.filter(Boolean).slice(0, 2).join(' \n ');
 }
 
+function createRuntimeIcon(path, size = 18) {
+  const icon = document.createElement('img');
+  try {
+    icon.src = chrome.runtime.getURL(path);
+  } catch {}
+  icon.alt = '';
+  icon.setAttribute('aria-hidden', 'true');
+  icon.style.width = `${size}px`;
+  icon.style.height = `${size}px`;
+  icon.style.flex = `0 0 ${size}px`;
+  icon.style.objectFit = 'contain';
+  return icon;
+}
+
 function renderAltTextModal(initialText, srcUrl, isError) {
   destroyModal();
+  modalPreviousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   modalRoot = document.createElement('div');
   modalRoot.style.all = 'initial';
   modalRoot.style.position = 'fixed';
@@ -392,118 +450,127 @@ function renderAltTextModal(initialText, srcUrl, isError) {
   modalRoot.style.display = 'flex';
   modalRoot.style.alignItems = 'center';
   modalRoot.style.justifyContent = 'center';
-  modalRoot.style.background = 'rgba(11,27,68,0.34)';
+  modalRoot.style.background = 'rgba(7,29,79,0.38)';
   modalRoot.style.padding = '20px';
 
   const card = document.createElement('div');
+  card.setAttribute('role', 'dialog');
+  card.setAttribute('aria-modal', 'true');
+  card.setAttribute('aria-labelledby', 'atg-modal-title');
+  card.setAttribute('aria-describedby', 'atg-modal-subtitle');
   card.style.fontFamily = 'Inter, "Segoe UI", Roboto, -apple-system, system-ui, sans-serif';
-  card.style.width = 'min(860px, calc(100vw - 40px))';
+  card.style.width = 'min(760px, calc(100vw - 40px))';
   card.style.maxHeight = '84vh';
   card.style.overflow = 'auto';
-  card.style.background = '#f8fbff';
-  card.style.border = '1px solid #dbeafe';
-  card.style.borderRadius = '16px';
-  card.style.boxShadow = '0 24px 50px rgba(2,8,23,0.25)';
-  card.style.padding = '22px';
+  card.style.background = '#ffffff';
+  card.style.border = '1px solid #d9dee8';
+  card.style.borderRadius = '14px';
+  card.style.boxShadow = '0 24px 60px rgba(7,29,79,0.24)';
   card.style.display = 'flex';
   card.style.flexDirection = 'column';
-  card.style.gap = '14px';
 
   const header = document.createElement('div');
   header.style.display = 'flex';
   header.style.alignItems = 'center';
-  header.style.gap = '12px';
-  header.style.flexWrap = 'wrap';
+  header.style.gap = '13px';
+  header.style.padding = '20px 22px';
+  header.style.borderBottom = '1px solid #e4e7ec';
 
   const icon = document.createElement('img');
   try {
-    icon.src = chrome.runtime.getURL('icons/icon-32.png');
+    icon.src = chrome.runtime.getURL('icons/icon-128.png');
   } catch {}
   icon.onerror = () => {
     icon.onerror = null;
-    icon.src = `data:image/svg+xml;utf8,${encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" rx="8" fill="#eff6ff" stroke="#dbeafe"/><text x="16" y="21" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="12" font-weight="700" fill="#0b1b44">AT</text></svg>'
-    )}`;
+    icon.style.display = 'none';
   };
   icon.alt = '';
-  icon.style.width = '30px';
-  icon.style.height = '30px';
-  icon.style.borderRadius = '8px';
-  icon.style.border = '1px solid #dbeafe';
-  icon.style.background = '#ffffff';
+  icon.style.width = '46px';
+  icon.style.height = '46px';
+  icon.style.borderRadius = '11px';
+  icon.style.objectFit = 'cover';
+  icon.style.imageRendering = 'auto';
   header.appendChild(icon);
 
   const headerText = document.createElement('div');
   headerText.style.display = 'flex';
   headerText.style.flexDirection = 'column';
-  headerText.style.gap = '2px';
+  headerText.style.gap = '3px';
   headerText.style.flex = '1';
+  headerText.style.minWidth = '0';
 
   const title = document.createElement('div');
+  title.id = 'atg-modal-title';
   title.textContent = isError
     ? (chrome.i18n.getMessage('modal_error') || 'Alt Text Error')
     : (chrome.i18n.getMessage('modal_title') || 'Generated Alt Text');
-  title.style.fontSize = '30px';
-  title.style.fontWeight = '700';
+  title.style.fontSize = '26px';
+  title.style.fontWeight = '750';
   title.style.lineHeight = '1.12';
-  title.style.letterSpacing = '-0.01em';
-  title.style.color = '#0b1b44';
+  title.style.letterSpacing = '-0.025em';
+  title.style.color = '#071d4f';
   headerText.appendChild(title);
 
   const subtitle = document.createElement('div');
+  subtitle.id = 'atg-modal-subtitle';
   subtitle.textContent = isError
     ? 'Could not generate alt text for this selection.'
-    : 'Review, edit, copy, or regenerate.';
+    : 'Edit before copying';
   subtitle.style.fontSize = '14px';
-  subtitle.style.color = '#64748b';
+  subtitle.style.color = '#667085';
   headerText.appendChild(subtitle);
 
   header.appendChild(headerText);
+
+  const topCloseBtn = document.createElement('button');
+  topCloseBtn.type = 'button';
+  topCloseBtn.setAttribute('aria-label', 'Close');
+  topCloseBtn.style.display = 'inline-flex';
+  topCloseBtn.style.width = '38px';
+  topCloseBtn.style.height = '38px';
+  topCloseBtn.style.alignItems = 'center';
+  topCloseBtn.style.justifyContent = 'center';
+  topCloseBtn.style.border = '0';
+  topCloseBtn.style.borderRadius = '8px';
+  topCloseBtn.style.background = 'transparent';
+  topCloseBtn.style.color = '#475467';
+  topCloseBtn.style.cursor = 'pointer';
+  topCloseBtn.appendChild(createRuntimeIcon('icons/ui-x.svg', 22));
+  topCloseBtn.onclick = destroyModal;
+  header.appendChild(topCloseBtn);
   card.appendChild(header);
 
-  const textarea = document.createElement('textarea');
-  textarea.value = initialText;
-  textarea.style.fontFamily = 'Inter, "Segoe UI", Roboto, -apple-system, system-ui, sans-serif';
-  textarea.style.width = '100%';
-  textarea.style.minHeight = '190px';
-  textarea.style.fontSize = '16px';
-  textarea.style.lineHeight = '1.45';
-  textarea.style.color = '#0f172a';
-  textarea.style.border = `1px solid ${isError ? '#fecaca' : '#dbeafe'}`;
-  textarea.style.background = '#ffffff';
-  textarea.style.borderRadius = '14px';
-  textarea.style.padding = '14px 16px';
-  textarea.style.outline = 'none';
-  textarea.style.boxSizing = 'border-box';
-  textarea.style.resize = 'vertical';
-  textarea.maxLength = ALT_TEXT_MAX_LENGTH;
-  textarea.id = 'atg-modal-textarea';
-  card.appendChild(textarea);
+  const body = document.createElement('div');
+  body.style.display = 'flex';
+  body.style.flexDirection = 'column';
+  body.style.gap = '14px';
+  body.style.padding = '22px';
 
-  // Language selector
   const langRow = document.createElement('div');
   langRow.style.display = 'flex';
-  langRow.style.gap = '10px';
+  langRow.style.gap = '12px';
   langRow.style.alignItems = 'center';
   langRow.style.flexWrap = 'wrap';
 
-  const langLabel = document.createElement('div');
+  const langLabel = document.createElement('label');
+  langLabel.htmlFor = 'atg-lang-select';
   langLabel.textContent = 'Language';
-  langLabel.style.fontSize = '16px';
-  langLabel.style.fontWeight = '600';
-  langLabel.style.color = '#0b1b44';
+  langLabel.style.fontSize = '14px';
+  langLabel.style.fontWeight = '700';
+  langLabel.style.color = '#071d4f';
 
   const langSelect = document.createElement('select');
   langSelect.id = 'atg-lang-select';
   langSelect.style.fontFamily = 'Inter, "Segoe UI", Roboto, -apple-system, system-ui, sans-serif';
+  langSelect.style.minWidth = '112px';
   langSelect.style.minHeight = '42px';
-  langSelect.style.border = '1px solid #dbeafe';
-  langSelect.style.borderRadius = '12px';
-  langSelect.style.padding = '8px 12px';
-  langSelect.style.fontSize = '15px';
-  langSelect.style.fontWeight = '500';
+  langSelect.style.border = '1px solid #c7ceda';
+  langSelect.style.borderRadius = '9px';
+  langSelect.style.padding = '8px 34px 8px 12px';
+  langSelect.style.fontSize = '14px';
+  langSelect.style.fontWeight = '600';
   langSelect.style.background = '#ffffff';
-  langSelect.style.color = '#0b1b44';
+  langSelect.style.color = '#071d4f';
   langSelect.style.outline = 'none';
 
   const opts = [
@@ -524,77 +591,159 @@ function renderAltTextModal(initialText, srcUrl, isError) {
   chrome.storage.sync.get({ preferredLanguage: '' }, (st) => { try { langSelect.value = st.preferredLanguage || ''; } catch {} });
   langSelect.onchange = async () => {
     try { await chrome.storage.sync.set({ preferredLanguage: langSelect.value }); } catch {}
-    // trigger a regenerate with the new language if not error state
     if (!isError) {
       chrome.runtime.sendMessage({ type: 'regenerateAltText', srcUrl, context: { pageLang: langSelect.value } });
     }
   };
-  langRow.appendChild(langLabel); langRow.appendChild(langSelect);
-  card.appendChild(langRow);
+  langRow.appendChild(langLabel);
+  langRow.appendChild(langSelect);
+  body.appendChild(langRow);
 
-  // Simple counter only (no user options)
+  const editor = document.createElement('div');
+  editor.style.position = 'relative';
+
+  const textarea = document.createElement('textarea');
+  textarea.value = initialText;
+  textarea.style.fontFamily = 'Inter, "Segoe UI", Roboto, -apple-system, system-ui, sans-serif';
+  textarea.style.width = '100%';
+  textarea.style.minHeight = '176px';
+  textarea.style.fontSize = '15px';
+  textarea.style.lineHeight = '1.5';
+  textarea.style.color = '#101828';
+  textarea.style.border = `1px solid ${isError ? '#f3b5af' : '#c7ceda'}`;
+  textarea.style.background = '#ffffff';
+  textarea.style.borderRadius = '10px';
+  textarea.style.padding = '16px 16px 42px';
+  textarea.style.outline = 'none';
+  textarea.style.boxSizing = 'border-box';
+  textarea.style.resize = 'vertical';
+  textarea.maxLength = ALT_TEXT_MAX_LENGTH;
+  textarea.id = 'atg-modal-textarea';
+  textarea.setAttribute('aria-label', 'Generated alt text');
+  textarea.setAttribute('aria-describedby', 'atg-modal-counter');
+  editor.appendChild(textarea);
+
   const counter = document.createElement('div');
   counter.id = 'atg-modal-counter';
-  counter.style.fontSize = '13px';
-  counter.style.color = '#64748b';
-  counter.style.alignSelf = 'flex-end';
-  counter.style.marginTop = '-4px';
-  card.appendChild(counter);
+  counter.style.position = 'absolute';
+  counter.style.right = '14px';
+  counter.style.bottom = '13px';
+  counter.style.padding = '2px 5px';
+  counter.style.borderRadius = '5px';
+  counter.style.background = 'rgba(255,255,255,0.94)';
+  counter.style.fontSize = '12px';
+  counter.style.color = '#667085';
+  counter.setAttribute('aria-live', 'polite');
+  editor.appendChild(counter);
   syncCounter(counter, textarea.value || '');
   textarea.addEventListener('input', () => syncCounter(counter, textarea.value || ''));
+  body.appendChild(editor);
+  card.appendChild(body);
 
-  const row = document.createElement('div');
-  row.style.display = 'flex';
-  row.style.gap = '10px';
-  row.style.marginTop = '2px';
-  row.style.flexWrap = 'wrap';
-  row.style.justifyContent = 'flex-end';
+  const footer = document.createElement('div');
+  footer.style.display = 'flex';
+  footer.style.alignItems = 'center';
+  footer.style.justifyContent = 'space-between';
+  footer.style.gap = '12px';
+  footer.style.padding = '16px 22px';
+  footer.style.borderTop = '1px solid #e4e7ec';
+  footer.style.background = '#ffffff';
 
-  const copyBtn = document.createElement('button');
-  copyBtn.textContent = chrome.i18n.getMessage('btn_copy') || 'Copy to Clipboard';
-  styleBtn(copyBtn, 'primary');
-  copyBtn.onclick = async () => {
-    try {
-      await navigator.clipboard.writeText(textarea.value);
-      copyBtn.textContent = chrome.i18n.getMessage('btn_copied') || 'Copied!';
-      setTimeout(() => (copyBtn.textContent = chrome.i18n.getMessage('btn_copy') || 'Copy to Clipboard'), 1200);
-    } catch (e) {}
-  };
-  row.appendChild(copyBtn);
+  const footerCloseBtn = document.createElement('button');
+  footerCloseBtn.textContent = chrome.i18n.getMessage('btn_close') || 'Close';
+  styleBtn(footerCloseBtn, 'ghost');
+  footerCloseBtn.onclick = destroyModal;
+  footer.appendChild(footerCloseBtn);
+
+  const actionStatus = document.createElement('div');
+  actionStatus.setAttribute('role', 'status');
+  actionStatus.setAttribute('aria-live', 'polite');
+  actionStatus.style.flex = '1';
+  actionStatus.style.color = '#b42318';
+  actionStatus.style.fontSize = '13px';
+  actionStatus.style.textAlign = 'right';
+  footer.appendChild(actionStatus);
+
+  const actions = document.createElement('div');
+  actions.style.display = 'flex';
+  actions.style.alignItems = 'center';
+  actions.style.justifyContent = 'flex-end';
+  actions.style.gap = '10px';
+  actions.style.flexWrap = 'wrap';
 
   if (!isError) {
     const regenBtn = document.createElement('button');
-    regenBtn.textContent = chrome.i18n.getMessage('btn_regen') || 'Regenerate';
+    regenBtn.appendChild(createRuntimeIcon('icons/ui-refresh-cw.svg', 18));
+    const regenLabel = document.createElement('span');
+    regenLabel.textContent = 'Try again';
+    regenBtn.appendChild(regenLabel);
     styleBtn(regenBtn, 'outline');
     regenBtn.onclick = async () => {
       regenBtn.disabled = true;
       regenBtn.style.opacity = '0.6';
-      regenBtn.textContent = 'Regenerating…';
+      regenLabel.textContent = 'Trying again…';
       let context = {};
       try {
         context = buildDomContext(findImageBySrc(srcUrl), srcUrl);
       } catch {}
+      actionStatus.textContent = '';
       chrome.runtime.sendMessage({ type: 'regenerateAltText', srcUrl, context }, (res) => {
         regenBtn.disabled = false;
         regenBtn.style.opacity = '1';
-        regenBtn.textContent = chrome.i18n.getMessage('btn_regen') || 'Regenerate';
+        regenLabel.textContent = 'Try again';
+        const runtimeError = chrome.runtime.lastError?.message;
+        if (runtimeError || !res?.ok) {
+          actionStatus.textContent = res?.error || runtimeError || 'Could not regenerate alt text. Please try again.';
+        }
       });
     };
-    row.appendChild(regenBtn);
+    actions.appendChild(regenBtn);
   }
 
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = chrome.i18n.getMessage('btn_close') || 'Close';
-  styleBtn(closeBtn, 'ghost');
-  closeBtn.onclick = destroyModal;
-  row.appendChild(closeBtn);
+  const copyBtn = document.createElement('button');
+  copyBtn.appendChild(createRuntimeIcon('icons/ui-copy.svg', 18));
+  const copyLabel = document.createElement('span');
+  copyLabel.textContent = 'Copy alt text';
+  copyBtn.appendChild(copyLabel);
+  styleBtn(copyBtn, 'primary');
+  copyBtn.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(textarea.value);
+      copyLabel.textContent = chrome.i18n.getMessage('btn_copied') || 'Copied!';
+      setTimeout(() => (copyLabel.textContent = 'Copy alt text'), 1200);
+    } catch (e) {}
+  };
+  actions.appendChild(copyBtn);
 
-  card.appendChild(row);
+  footer.appendChild(actions);
+  card.appendChild(footer);
   modalRoot.appendChild(card);
   modalRoot.addEventListener('click', (e) => {
     if (e.target === modalRoot) destroyModal();
   });
   document.documentElement.appendChild(modalRoot);
+  modalKeydownHandler = (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      destroyModal();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(card.querySelectorAll('button:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+  modalRoot.addEventListener('keydown', modalKeydownHandler);
+  textarea.focus({ preventScroll: true });
+  textarea.select();
 }
 
 function syncCounter(counterEl, value) {
@@ -605,31 +754,36 @@ function syncCounter(counterEl, value) {
 
 function styleBtn(btn, variant = 'primary') {
   btn.style.fontFamily = 'Inter, "Segoe UI", Roboto, -apple-system, system-ui, sans-serif';
+  btn.style.display = 'inline-flex';
+  btn.style.alignItems = 'center';
+  btn.style.justifyContent = 'center';
+  btn.style.gap = '8px';
   btn.style.cursor = 'pointer';
   btn.style.padding = '10px 16px';
-  btn.style.minHeight = '42px';
-  btn.style.borderRadius = '12px';
-  btn.style.fontSize = '15px';
-  btn.style.fontWeight = '600';
+  btn.style.minHeight = '44px';
+  btn.style.borderRadius = '9px';
+  btn.style.fontSize = '14px';
+  btn.style.fontWeight = '680';
   btn.style.lineHeight = '1';
   btn.style.transition = 'all 120ms ease';
   btn.style.whiteSpace = 'nowrap';
 
   if (variant === 'outline') {
-    btn.style.border = '1px solid #dbeafe';
+    btn.style.border = '1px solid #c7ceda';
     btn.style.background = '#ffffff';
-    btn.style.color = '#0b1b44';
+    btn.style.color = '#1769e0';
     return;
   }
   if (variant === 'ghost') {
-    btn.style.border = '1px solid #dbeafe';
-    btn.style.background = '#f8fbff';
-    btn.style.color = '#334155';
+    btn.style.border = '1px solid #d9dee8';
+    btn.style.background = '#ffffff';
+    btn.style.color = '#475467';
     return;
   }
-  btn.style.border = '1px solid #0b1b44';
-  btn.style.background = '#0b1b44';
+  btn.style.border = '1px solid #1769e0';
+  btn.style.background = '#1769e0';
   btn.style.color = '#ffffff';
+  btn.style.boxShadow = '0 8px 18px rgba(23,105,224,0.2)';
 }
 
 function updateAltTextModal(text) {
@@ -640,8 +794,14 @@ function updateAltTextModal(text) {
 }
 
 function destroyModal() {
+  if (modalRoot && modalKeydownHandler) modalRoot.removeEventListener('keydown', modalKeydownHandler);
   if (modalRoot && modalRoot.parentNode) modalRoot.parentNode.removeChild(modalRoot);
   modalRoot = null;
+  modalKeydownHandler = null;
+  if (modalPreviousFocus?.isConnected) {
+    try { modalPreviousFocus.focus({ preventScroll: true }); } catch {}
+  }
+  modalPreviousFocus = null;
 }
 
 function inferImageRole(img) {

@@ -19,12 +19,12 @@ export function PlanBadge({ plan, trialEndsAt }: PlanBadgeProps) {
   const baseStyle: CSSProperties = {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: 6,
-    borderRadius: 999,
-    padding: '4px 12px',
-    fontSize: 12,
-    fontWeight: 600,
-    letterSpacing: '0.01em',
+    gap: 5,
+    borderRadius: 5,
+    padding: '3px 7px',
+    fontSize: 10,
+    fontWeight: 700,
+    letterSpacing: '0.035em',
     border: '1px solid transparent',
     whiteSpace: 'nowrap',
     lineHeight: 1.2,
@@ -35,7 +35,6 @@ export function PlanBadge({ plan, trialEndsAt }: PlanBadgeProps) {
     height: 7,
     borderRadius: 999,
     background: color,
-    boxShadow: `0 0 0 2px ${color}20`,
   });
 
   switch (plan) {
@@ -43,7 +42,7 @@ export function PlanBadge({ plan, trialEndsAt }: PlanBadgeProps) {
       const days = daysRemaining(trialEndsAt);
       const label = days === null ? 'Trial' : `Trial · ${days} day${days === 1 ? '' : 's'} left`;
       return (
-        <span style={{ ...baseStyle, background: '#fff7ed', color: '#9a3412', borderColor: '#fdba74' }}>
+        <span style={{ ...baseStyle, background: '#fffaeb', color: '#b54708', borderColor: '#f3d38a' }}>
           <span style={dotStyle('#f59e0b')} />
           {label}
         </span>
@@ -51,15 +50,13 @@ export function PlanBadge({ plan, trialEndsAt }: PlanBadgeProps) {
     }
     case 'paid':
       return (
-        <span style={{ ...baseStyle, background: '#ecfdf3', color: '#166534', borderColor: '#86efac' }}>
-          <span style={dotStyle('#16a34a')} />
-          Pro · Active
+        <span style={{ ...baseStyle, background: '#ffffff', color: '#0d5bd7', borderColor: '#9eb9e8' }}>
+          Pro
         </span>
       );
     default:
       return (
-        <span style={{ ...baseStyle, background: '#eff6ff', color: '#1e3a8a', borderColor: '#bfdbfe' }}>
-          <span style={dotStyle('#64748b')} />
+        <span style={{ ...baseStyle, background: '#f6f8fb', color: '#475467', borderColor: '#d9dee8' }}>
           Free
         </span>
       );

@@ -5,7 +5,6 @@ import {
   Browser,
   Check,
   CheckCircle,
-  DownloadSimple,
   GoogleChromeLogo,
   LockKey,
   PencilSimple,
@@ -20,6 +19,7 @@ import { useI18n } from '@/i18n/provider';
 import { buildRoutePath } from '@/i18n/routes';
 import { useSeo } from '@/lib/seo';
 import { IS_STAGING } from '@/lib/env';
+import productFacts from '@/content/productFacts.json';
 
 const GENERATED_ALT_TEXT = 'Light oak dining chair with curved backrest in a warm studio setting';
 
@@ -50,8 +50,8 @@ const BATCH_ITEMS = [
 export function LandingPage() {
   const { locale, t } = useI18n();
   const landingHref = buildRoutePath(locale, 'landing');
-  const appHref = buildRoutePath(locale, 'app');
-  const chromeHref = CHANNEL_LINKS.find((channel) => channel.id === 'chrome')?.href || appHref;
+  const apiHref = buildRoutePath(locale, 'agentApi');
+  const chromeHref = CHANNEL_LINKS.find((channel) => channel.id === 'chrome')?.href || landingHref;
 
   useSeo('landing');
 
@@ -94,11 +94,12 @@ export function LandingPage() {
             <a href="#workflow">Features</a>
             <a href="#channels">How it works</a>
             <a href="#pricing">Pricing</a>
+            <Link to={apiHref}>API / MCP</Link>
           </nav>
 
           <div className="atgp-header-actions">
             <LanguageSwitcher />
-            <Link to={appHref} className="atgp-sign-in">{t('common.signIn')}</Link>
+            <Link to={apiHref} className="atgp-sign-in">For agents</Link>
             <a href={chromeHref} className="btn btn-primary atgp-header-cta">
               <GoogleChromeLogo size={18} weight="fill" aria-hidden="true" />
               Add to Chrome
@@ -113,20 +114,20 @@ export function LandingPage() {
             <div className="atgp-hero-copy atgp-hero-enter">
               <span className="atgp-kicker">SEO-aware alt text, right where you work</span>
               <h1>Alt text, without leaving the page.</h1>
-              <p>Collect page images, add useful context, generate, review, and copy—right where you work.</p>
+              <p>{productFacts.landingIntro}</p>
               <div className="atgp-hero-actions">
                 <a href={chromeHref} className="btn btn-primary btn-large">
                   <GoogleChromeLogo size={21} weight="fill" aria-hidden="true" />
                   Add to Chrome
                 </a>
-                <Link to={appHref} className="btn atgp-btn-secondary btn-large">
-                  Try the web app
+                <Link to={apiHref} className="btn atgp-btn-secondary btn-large">
+                  API / MCP for agents
                   <ArrowRight size={18} aria-hidden="true" />
                 </Link>
               </div>
               <div className="atgp-hero-facts" aria-label="Product highlights">
-                <span><Browser size={17} aria-hidden="true" /> Web + Chrome</span>
-                <span><UserCircle size={17} aria-hidden="true" /> One account</span>
+                <span><GoogleChromeLogo size={17} aria-hidden="true" /> Chrome extension</span>
+                <span><Browser size={17} aria-hidden="true" /> Popup + workspace</span>
                 <span><ShieldCheck size={17} aria-hidden="true" /> Accuracy first</span>
               </div>
               {IS_STAGING ? <div className="notice notice-warning">{t('landing.hero.stagingNotice')}</div> : null}
@@ -230,13 +231,13 @@ export function LandingPage() {
         <section className="atgp-batch-section">
           <div className="container atgp-batch-shell atgp-reveal">
             <div className="atgp-batch-intro">
-              <span className="atgp-kicker">Or use the web app</span>
+              <span className="atgp-kicker">The full-page Chrome workspace</span>
               <h2>Upload and generate alt text in batches.</h2>
-              <p>Add several images, provide shared context, and review consistent results together.</p>
-              <Link to={appHref} className="atgp-upload-zone">
+              <p>Open the extension workspace, add several images, provide shared context, and review consistent results together.</p>
+              <a href={chromeHref} className="atgp-upload-zone">
                 <UploadSimple size={28} weight="duotone" aria-hidden="true" />
-                <span><strong>Choose images</strong><small>JPG, PNG, WEBP · up to 10MB each</small></span>
-              </Link>
+                <span><strong>Add the Chrome extension</strong><small>Popup for quick work · full page for batches</small></span>
+              </a>
             </div>
             <div className="atgp-batch-results">
               {BATCH_ITEMS.map((item) => (
@@ -247,9 +248,9 @@ export function LandingPage() {
                   <div className="atgp-file-status"><span>{item.count}</span><strong><CheckCircle size={15} weight="fill" aria-hidden="true" /> Ready</strong></div>
                 </article>
               ))}
-              <Link to={appHref} className="atgp-download-link">
-                <DownloadSimple size={18} aria-hidden="true" /> Download all with metadata
-              </Link>
+              <a href={chromeHref} className="atgp-download-link">
+                <GoogleChromeLogo size={18} aria-hidden="true" /> Open the batch workspace in Chrome
+              </a>
             </div>
           </div>
         </section>
@@ -278,25 +279,25 @@ export function LandingPage() {
           <div className="container">
             <div className="atgp-channel-layout">
               <div className="atgp-channel-title atgp-reveal">
-                <span className="atgp-kicker">Web app or Chrome extension?</span>
-                <h2>Use the tool that fits how you work.</h2>
+                <span className="atgp-kicker">One complete Chrome product</span>
+                <h2>Two focused workspaces, one extension.</h2>
               </div>
               <article className="atgp-channel-option atgp-reveal">
-                <Browser size={28} weight="duotone" aria-hidden="true" />
-                <h3>Web app</h3>
-                <ul><li><Check size={15} />Upload images in batches</li><li><Check size={15} />Add shared context</li><li><Check size={15} />Review and export metadata</li></ul>
-                <Link to={appHref}>Try the web app <ArrowRight size={16} /></Link>
+                <GoogleChromeLogo size={28} weight="duotone" aria-hidden="true" />
+                <h3>Quick popup</h3>
+                <ul><li><Check size={15} />Collect images from the page</li><li><Check size={15} />Add page-aware context</li><li><Check size={15} />Copy a reviewed result</li></ul>
+                <a href={chromeHref}>Add to Chrome <ArrowRight size={16} /></a>
               </article>
               <article className="atgp-channel-option atgp-reveal">
-                <GoogleChromeLogo size={28} weight="duotone" aria-hidden="true" />
-                <h3>Chrome extension</h3>
-                <ul><li><Check size={15} />Work on any page</li><li><Check size={15} />Collect images in one click</li><li><Check size={15} />Copy alt text instantly</li></ul>
+                <Browser size={28} weight="duotone" aria-hidden="true" />
+                <h3>Full-page workspace</h3>
+                <ul><li><Check size={15} />Upload and process batches</li><li><Check size={15} />Review every description</li><li><Check size={15} />Download images with metadata</li></ul>
                 <a href={chromeHref}>Add to Chrome <ArrowRight size={16} /></a>
               </article>
               <article className="atgp-channel-option atgp-channel-account atgp-reveal">
                 <UserCircle size={28} weight="duotone" aria-hidden="true" />
-                <h3>One shared account</h3>
-                <p>Your usage, billing, and access work across web and Chrome.</p>
+                <h3>Account and billing</h3>
+                <p>Sign in, see usage, and manage the Chrome subscription inside the extension.</p>
               </article>
             </div>
           </div>
@@ -307,24 +308,17 @@ export function LandingPage() {
             <div className="atgp-pricing-intro atgp-reveal">
               <span className="atgp-kicker">Simple pricing</span>
               <h2>Try it free for three days.</h2>
-              <p>Every paid plan includes up to 5,000 successful generations per month under fair use. Cancel any time.</p>
+              <p>{productFacts.chromePricing}</p>
+              <p className="atgp-agent-pricing-note">
+                Building an automated workflow? <Link to={apiHref}>API and MCP access</Link> is a separate, usage-based agent service.
+              </p>
             </div>
-            <div className="atgp-price-grid">
-              <article className="atgp-price-card atgp-reveal">
-                <h3>Web</h3><p>Upload and generate alt text in the web app.</p><strong>$10 <small>/ month</small></strong>
-                <ul><li><Check size={15} />Batch generation</li><li><Check size={15} />Metadata download</li></ul>
-                <Link to={appHref} className="btn atgp-btn-secondary">Choose Web</Link>
-              </article>
-              <article className="atgp-price-card atgp-reveal">
-                <h3>Chrome</h3><p>Generate alt text while you browse.</p><strong>$10 <small>/ month</small></strong>
-                <ul><li><Check size={15} />On-page image collection</li><li><Check size={15} />Right-click generation</li></ul>
-                <a href={chromeHref} className="btn atgp-btn-secondary">Choose Chrome</a>
-              </article>
+            <div className="atgp-price-grid atgp-price-grid--single">
               <article className="atgp-price-card atgp-price-featured atgp-reveal">
-                <span className="atgp-best-value">Best value</span>
-                <h3>Web + Chrome</h3><p>Use both tools with one account.</p><strong>$19 <small>/ month</small></strong>
-                <ul><li><Check size={15} />Web app + Chrome extension</li><li><Check size={15} />One shared allowance</li></ul>
-                <Link to={appHref} className="btn btn-primary">Choose Web + Chrome</Link>
+                <span className="atgp-best-value">Complete extension</span>
+                <h3>Chrome</h3><p>Quick generation on the page and a full workspace for batches.</p><strong>$10 <small>/ month</small></strong>
+                <ul><li><Check size={15} />Three-day free trial</li><li><Check size={15} />Popup + full-page workspace</li><li><Check size={15} />Up to 5,000 successful generations monthly</li></ul>
+                <a href={chromeHref} className="btn btn-primary">Add to Chrome</a>
               </article>
             </div>
           </div>
@@ -339,7 +333,7 @@ export function LandingPage() {
             <p>Start with a three-day free trial. Review every result before it goes live.</p>
             <div>
               <a href={chromeHref} className="btn btn-primary"><GoogleChromeLogo size={18} weight="fill" /> Add to Chrome</a>
-              <Link to={appHref} className="btn atgp-btn-secondary">Try the web app</Link>
+              <Link to={apiHref} className="btn atgp-btn-secondary">API / MCP for agents</Link>
             </div>
           </div>
         </section>
@@ -351,7 +345,7 @@ export function LandingPage() {
             <img src="/favicon.png" alt="" width="34" height="34" />
             <span><strong>{t('brand.name')}</strong><small>{t('brand.sharedTagline')}</small></span>
           </Link>
-          <nav aria-label="Footer navigation"><a href="#workflow">How it works</a><a href="#pricing">Pricing</a></nav>
+          <nav aria-label="Footer navigation"><a href="#workflow">How it works</a><a href="#pricing">Pricing</a><Link to={apiHref}>API / MCP</Link></nav>
           <nav aria-label="Legal and support"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="mailto:charles@acquah.io">Support</a></nav>
         </div>
       </footer>

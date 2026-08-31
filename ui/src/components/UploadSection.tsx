@@ -1,66 +1,75 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Wand2, ExternalLink, Upload } from 'lucide-react';
+import {
+  ChevronRight,
+  CloudUpload,
+  ExternalLink,
+  FileText,
+  Globe2,
+  ImageIcon,
+  Sparkles,
+  X,
+} from 'lucide-react';
+import { PendingUploadEntry } from '@/lib/types';
 
 interface UploadSectionProps {
   language: string;
   onLanguageChange: (value: string) => void;
   context: string;
   onContextChange: (value: string) => void;
+  queuedItems: PendingUploadEntry[];
   onFilesSelected: (files: FileList) => Promise<void> | void;
+  onRemoveQueued: (index: number) => Promise<void> | void;
   onOpenFullPage: () => Promise<void> | void;
+  onGenerateUploads: () => Promise<void> | void;
   onGenerateCurrentPage: () => Promise<void> | void;
   disabled?: boolean;
   disabledMessage?: string;
   onRequireAuth?: () => void;
 }
 
+const LANGUAGE_OPTIONS = [
+  ['auto', 'Auto'], ['en', 'English'], ['es', 'Spanish'], ['fr', 'French'],
+  ['de', 'German'], ['it', 'Italian'], ['pt', 'Portuguese'], ['ja', 'Japanese'],
+  ['zh', 'Chinese'], ['ko', 'Korean'], ['ar', 'Arabic'], ['hi', 'Hindi'],
+] as const;
+
 export function UploadSection({
   language,
   onLanguageChange,
   context,
   onContextChange,
+  queuedItems,
   onFilesSelected,
+  onRemoveQueued,
   onOpenFullPage,
+  onGenerateUploads,
   onGenerateCurrentPage,
   disabled = false,
   disabledMessage,
   onRequireAuth,
 }: UploadSectionProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [lastSelectionCount, setLastSelectionCount] = useState(0);
   const [busy, setBusy] = useState(false);
+  const selectValue = language || 'auto';
+  const finalDisabled = busy || disabled;
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (disabled) {
-      onRequireAuth?.();
-      e.target.value = '';
-      return;
-    }
-    const files = e.target.files;
-    if (!files || files.length === 0) {
-      setLastSelectionCount(0);
-      return;
-    }
-    setBusy(true);
-    try {
-      setLastSelectionCount(files.length);
-      await onFilesSelected(files);
-    } finally {
-      setBusy(false);
-      e.target.value = '';
-    }
+  const requireAccess = () => {
+    if (!disabled) return true;
+    onRequireAuth?.();
+    return false;
   };
 
-  const handleGenerate = async () => {
-    if (disabled) {
-      onRequireAuth?.();
-      return;
-    }
-    if (busy) return;
+  const chooseFiles = () => {
+    if (!requireAccess()) return;
+    fileInputRef.current?.click();
+  };
+
+  const scanPage = async () => {
+    if (!requireAccess() || busy) return;
     setBusy(true);
     try {
       await onGenerateCurrentPage();
@@ -69,184 +78,170 @@ export function UploadSection({
     }
   };
 
-  const selectValue = language || 'auto';
-
-  const handleLanguageChange = (value: string) => {
-    onLanguageChange(value === 'auto' ? '' : value);
+  const generateUploads = async () => {
+    if (!requireAccess() || busy || !queuedItems.length) return;
+    setBusy(true);
+    try {
+      await onGenerateUploads();
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const finalDisabled = busy || disabled;
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if (!event.metaKey || event.defaultPrevented) return;
+      if (event.key === '1') {
+        event.preventDefault();
+        chooseFiles();
+      }
+      if (event.key === '2') {
+        event.preventDefault();
+        void scanPage();
+      }
+      if (event.key === 'Enter' && queuedItems.length) {
+        event.preventDefault();
+        void generateUploads();
+      }
+    };
+    window.addEventListener('keydown', handleShortcut);
+    return () => window.removeEventListener('keydown', handleShortcut);
+  });
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!requireAccess()) {
+      event.target.value = '';
+      return;
+    }
+    const files = event.target.files;
+    if (!files?.length) return;
+    setBusy(true);
+    try {
+      await onFilesSelected(files);
+    } finally {
+      setBusy(false);
+      event.target.value = '';
+    }
+  };
 
   return (
-    <div
-      className="rounded-xl border bg-card"
-      style={{
-        borderColor: '#dbeafe',
-        boxShadow: '0 2px 10px rgba(30, 58, 138, 0.05)',
-        padding: 18,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 16,
-      }}
-    >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <h2 className="text-2xl font-semibold text-foreground" style={{ lineHeight: 1.1, letterSpacing: '-0.01em' }}>
-          Upload images
-        </h2>
-        <p className="text-base text-muted-foreground">Add your SEO focus, then generate accurate alt text in batches.</p>
-      </div>
+    <div>
+      <input ref={fileInputRef} type="file" multiple accept="image/*" onChange={handleFileChange} className="hidden" />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <Label htmlFor="popup-language" className="text-sm">
-          Language
-        </Label>
-        <Select value={selectValue} onValueChange={handleLanguageChange}>
-          <SelectTrigger
-            id="popup-language"
-            className="w-full"
-            style={{
-              borderColor: '#dbeafe',
-              borderRadius: 16,
-              minHeight: 52,
-              background: '#ffffff',
-              fontSize: 16,
-            }}
+      <section className="command-section" aria-labelledby="popup-source-heading">
+        <div className="command-eyebrow-row">
+          <h2 id="popup-source-heading" className="command-eyebrow">Source</h2>
+          <span className="command-shortcut">⌘ 1–2</span>
+        </div>
+        <div className="command-source-grid">
+          <button
+            type="button"
+            className={`command-source-button ${queuedItems.length ? 'command-source-button--active' : ''}`}
+            onClick={chooseFiles}
+            disabled={finalDisabled}
           >
-            <SelectValue placeholder="Auto" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="auto">Auto</SelectItem>
-            <SelectItem value="en">English</SelectItem>
-            <SelectItem value="es">Spanish</SelectItem>
-            <SelectItem value="fr">French</SelectItem>
-            <SelectItem value="de">German</SelectItem>
-            <SelectItem value="it">Italian</SelectItem>
-            <SelectItem value="pt">Portuguese</SelectItem>
-            <SelectItem value="ja">Japanese</SelectItem>
-            <SelectItem value="zh">Chinese</SelectItem>
-            <SelectItem value="ko">Korean</SelectItem>
-            <SelectItem value="ar">Arabic</SelectItem>
-            <SelectItem value="hi">Hindi</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+            <CloudUpload size={20} strokeWidth={1.8} />
+            Upload images
+          </button>
+          <button type="button" className="command-source-button" onClick={() => void scanPage()} disabled={finalDisabled}>
+            <FileText size={19} strokeWidth={1.8} />
+            Scan this page
+          </button>
+        </div>
+        <p className="command-helper">Add images from your device or collect images from the current tab.</p>
+      </section>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        accept="image/*"
-        onChange={handleFileChange}
-        className="hidden"
-      />
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          flexWrap: 'wrap',
-        }}
-      >
+      <section className="command-section" aria-labelledby="popup-queue-heading">
+        <div className="command-queue-heading">
+          <h2 id="popup-queue-heading" className="command-eyebrow">Queued files</h2>
+          {queuedItems.length > 0 ? (
+            <span className="command-ready-count">
+              {queuedItems.length} image{queuedItems.length === 1 ? '' : 's'} ready
+              <span className="command-ready-dot" />
+              <ChevronRight size={14} />
+            </span>
+          ) : null}
+        </div>
+
+        {queuedItems.length ? (
+          <div className="command-queue-grid">
+            {queuedItems.slice(0, 3).map((item, index) => (
+              <div className="command-queue-item" key={`${item.name}-${index}`}>
+                <img src={item.dataUrl || item.sourceUrl} alt={item.name} />
+                <button
+                  type="button"
+                  className="command-queue-remove"
+                  aria-label={`Remove ${item.name}`}
+                  onClick={() => void onRemoveQueued(index)}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="command-empty-queue">
+            <ImageIcon size={17} strokeWidth={1.7} />
+            No images queued yet
+          </div>
+        )}
+      </section>
+
+      <section className="command-section">
+        <div className="command-field-grid">
+          <div className="command-field">
+            <Label htmlFor="popup-language" className="command-label">Language</Label>
+            <Select value={selectValue} onValueChange={(value) => onLanguageChange(value === 'auto' ? '' : value)}>
+              <SelectTrigger id="popup-language" aria-label="Language">
+                <span className="flex items-center gap-2 min-w-0">
+                  <Globe2 size={16} strokeWidth={1.7} />
+                  <SelectValue placeholder="Auto" />
+                </span>
+              </SelectTrigger>
+              <SelectContent>
+                {LANGUAGE_OPTIONS.map(([value, label]) => (
+                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="command-field">
+            <Label htmlFor="popup-context" className="command-label">SEO context</Label>
+            <Textarea
+              id="popup-context"
+              className="command-textarea"
+              placeholder="Product, brand, or focus keyword"
+              value={context}
+              onChange={(event) => onContextChange(event.target.value)}
+            />
+          </div>
+          <p className="command-context-help">Add product, brand, or keyword context for more accurate alt text.</p>
+        </div>
+
+        {disabled && disabledMessage ? <div className="command-notice" style={{ marginTop: 12 }}>{disabledMessage}</div> : null}
+
         <Button
-          size="lg"
-          onClick={() => {
-            if (disabled) {
-              onRequireAuth?.();
-              return;
-            }
-            fileInputRef.current?.click();
-          }}
-          disabled={finalDisabled}
-          style={{
-            backgroundColor: '#0b1b44',
-            color: '#ffffff',
-            borderRadius: 14,
-            border: '1px solid #0b1b44',
-            minWidth: 172,
-          }}
+          className="command-primary command-primary--wide"
+          onClick={() => void generateUploads()}
+          disabled={finalDisabled || queuedItems.length === 0}
+          style={{ marginTop: 14 }}
         >
-          <Upload className="w-4 h-4" />
-          Choose files
+          <Sparkles size={16} strokeWidth={1.8} />
+          {busy ? 'Preparing workspace…' : queuedItems.length
+            ? `Generate ${queuedItems.length} alt text${queuedItems.length === 1 ? '' : 's'}`
+            : 'Choose images to continue'}
+          <span className="command-primary__shortcut">⌘ ↵</span>
         </Button>
-        <div
-          className="text-sm text-muted-foreground"
-          style={{
-            border: '1px solid #dbeafe',
-            borderRadius: 14,
-            padding: '11px 16px',
-            background: '#ffffff',
-            minWidth: 176,
-            lineHeight: 1.1,
-          }}
-        >
-          {lastSelectionCount > 0 ? `${lastSelectionCount} file${lastSelectionCount > 1 ? 's' : ''} selected` : 'No file chosen'}
-        </div>
-      </div>
+      </section>
 
-      <Button
-        variant="outline"
-        className="w-full"
-        onClick={() => {
-          if (disabled) {
-            onRequireAuth?.();
-            return;
-          }
-          onOpenFullPage();
-        }}
-        disabled={finalDisabled}
-        style={{
-          borderColor: '#dbeafe',
-          borderRadius: 16,
-          minHeight: 52,
-          fontSize: 17,
-          color: '#0b1b44',
-          background: '#ffffff',
-        }}
-      >
-        <ExternalLink className="w-4 h-4 mr-2" />
-        Open full page
-      </Button>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <Label htmlFor="popup-context" className="text-sm">
-          SEO focus and page context
-        </Label>
-        <Textarea
-          id="popup-context"
-          placeholder="Example: Product: oak dining chair. Focus keyword: solid oak dining chair. Brand: North & Pine."
-          value={context}
-          onChange={(e) => onContextChange(e.target.value)}
-          style={{
-            minHeight: 120,
-            resize: 'vertical',
-            borderColor: '#dbeafe',
-            borderRadius: 16,
-            fontSize: 16,
-          }}
-        />
-      </div>
-
-      {disabled && disabledMessage && (
-        <div className="text-sm rounded-md border px-3 py-2" style={{ background: '#fffbeb', borderColor: '#fed7aa', color: '#92400e' }}>
-          {disabledMessage}
-        </div>
-      )}
-
-      <Button
-        className="w-full"
-        onClick={handleGenerate}
-        disabled={finalDisabled}
-        style={{
-          background: '#0b1b44',
-          color: '#ffffff',
-          border: '1px solid #0b1b44',
-          borderRadius: 14,
-          minHeight: 48,
-        }}
-      >
-        <Wand2 className={`w-4 h-4 mr-2 ${finalDisabled ? '' : busy ? 'animate-pulse' : ''}`} />
-        Generate all images on this page
-      </Button>
+      <button type="button" className="command-workspace-link" onClick={() => void onOpenFullPage()}>
+        <span className="command-workspace-link__label">
+          <ExternalLink size={16} strokeWidth={1.8} />
+          Open workspace
+        </span>
+        <span className="command-shortcut">⌘ O</span>
+      </button>
     </div>
   );
 }

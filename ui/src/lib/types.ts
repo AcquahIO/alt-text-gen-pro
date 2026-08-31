@@ -6,12 +6,19 @@ export interface PendingUploadEntry {
   size: number;
   dataUrl?: string;
   sourceUrl?: string;
+  pageContext?: string;
+  contentTitle?: string;
+  imageNotes?: string;
+  imageRole?: string;
 }
 
 export interface StoredPendingUploads {
   entries: PendingUploadEntry[];
   language?: string;
   context?: string;
+  focusKeyword?: string;
+  brand?: string;
+  notice?: string;
   when?: number;
 }
 

@@ -63,6 +63,17 @@ async function checkWebAssets(pagePath) {
     throw new Error(`${new URL(pagePath, webBase)} did not reference any build assets`);
   }
 
+  const canonicalCount = (body.match(/<link\s+rel=["']canonical["']/gi) ?? []).length;
+  const descriptionCount = (body.match(/<meta\s+name=["']description["']/gi) ?? []).length;
+  const jsonLdCount = (body.match(/type=["']application\/ld\+json["']/gi) ?? []).length;
+  const h1Count = (body.match(/<h1(?:\s|>)/gi) ?? []).length;
+  if (canonicalCount !== 1 || descriptionCount !== 1 || jsonLdCount !== 1 || h1Count !== 1) {
+    throw new Error(`${new URL(pagePath, webBase)} has invalid SEO cardinality (canonical=${canonicalCount}, description=${descriptionCount}, jsonLd=${jsonLdCount}, h1=${h1Count})`);
+  }
+  if (/your-domain\.com/i.test(body)) {
+    throw new Error(`${new URL(pagePath, webBase)} contains a placeholder domain`);
+  }
+
   for (const assetPath of new Set(assetPaths)) {
     const expectedType = assetPath.endsWith('.css') ? 'text/css' : 'javascript';
     await check(assetPath, { base: webBase, contentType: expectedType });
@@ -75,9 +86,19 @@ await check('/privacy', { contentType: 'text/html', includes: 'Privacy, in plain
 await check('/terms', { contentType: 'text/html', includes: 'Terms built for a useful product.' });
 await check('/api/subscription-status', { status: 401, contentType: 'application/json' });
 await checkWebAssets('/en-GB/');
+await checkWebAssets('/en-US/');
+await checkWebAssets('/en-GB/api/');
 await check('/en-GB/app', { base: webBase, contentType: 'text/html', includes: 'Alt Text Generator Pro' });
 await check('/assets/production-smoke-missing.js', { base: webBase, status: 404 });
+await check('/this-page-does-not-exist', { base: webBase, status: 404 });
 await check('/robots.txt', { base: webBase, contentType: 'text/plain', includes: 'Sitemap:' });
 await check('/sitemap.xml', { base: webBase, contentType: 'xml', includes: '<urlset' });
+await check('/llms.txt', { base: webBase, contentType: 'text/plain', includes: '# Alt Text Generator Pro' });
+await check('/.well-known/mcp.json', { base: webBase, contentType: 'application/json', includes: 'streamable-http' });
+await check('/v1/openapi.json', { contentType: 'application/json', includes: '"openapi"' });
+const mcp = await check('/mcp', { status: 401, contentType: 'application/json', includes: 'agent_token' });
+if (!mcp.response.headers.get('www-authenticate')?.startsWith('Bearer ')) {
+  throw new Error('MCP unauthenticated response must include a Bearer challenge');
+}
 
 console.log('Production smoke checks passed.');

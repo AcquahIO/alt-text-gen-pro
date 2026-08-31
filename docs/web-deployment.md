@@ -17,7 +17,7 @@ This document describes the deployment model for the web frontend hosted on Site
 
 1. Configure separate roots for production and staging.
 2. Enable password protection on staging root.
-3. Ensure `public/.htaccess` is deployed so SPA routes rewrite to `index.html`.
+3. Ensure `public/.htaccess` is deployed so locale entry points, legacy redirects, canonical slashes, and real 404s work as configured.
 4. Create a SiteGround FTP account for the GitHub Actions deploy. This workflow uses FTP over TLS on port `21`, not SSH-key SFTP.
 
 ## Staging indexing control
@@ -39,7 +39,7 @@ Set the same secret keys in both `staging` and `production`, with environment-sp
 - `SG_USER`
 - `SG_PASSWORD`
 - `SG_REMOTE_PATH`
-- `VITE_API_BASE_URL`
+- `VITE_AGENT_API_ORIGIN`
 - `VITE_APP_ORIGIN`
 - `VITE_CHROME_LINK`
 - `VITE_SHOPIFY_LINK`

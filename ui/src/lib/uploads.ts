@@ -1,6 +1,14 @@
 import { ensureMaxDataUrlSize } from '@extension/utils/imageTools.js';
 import { PendingUploadEntry, UploadItem } from './types';
 
+const MAX_PENDING_IMAGE_BYTES = 750_000;
+
+function estimateDataUrlBytes(dataUrl: string) {
+  const base64 = String(dataUrl || '').split(',')[1] || '';
+  const padding = (base64.match(/=+$/) || [''])[0].length;
+  return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
+}
+
 function makeId() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -29,11 +37,15 @@ export async function filesToPendingEntries(files: FileList | File[]): Promise<P
   const results: PendingUploadEntry[] = [];
   for (const file of list) {
     const rawDataUrl = await fileToDataUrl(file);
-    const dataUrl = await ensureMaxDataUrlSize(rawDataUrl).catch(() => rawDataUrl);
+    const dataUrl = await ensureMaxDataUrlSize(rawDataUrl, MAX_PENDING_IMAGE_BYTES);
+    const storedSize = estimateDataUrlBytes(dataUrl);
+    if (storedSize > MAX_PENDING_IMAGE_BYTES) {
+      throw new Error(`${file.name} could not be reduced enough for secure local storage.`);
+    }
     results.push({
       name: file.name,
       type: file.type || 'application/octet-stream',
-      size: file.size || 0,
+      size: storedSize,
       dataUrl,
     });
   }

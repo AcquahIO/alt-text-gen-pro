@@ -7,26 +7,6 @@
   RewriteRule ^$ /en-US/ [R=302,L]
 
   RewriteCond %{REQUEST_URI} ^/?$
-  RewriteCond %{HTTP:Cookie} (^|;\s*)lang_pref=es-ES(;|$) [NC]
-  RewriteRule ^$ /es-ES/ [R=302,L]
-
-  RewriteCond %{REQUEST_URI} ^/?$
-  RewriteCond %{HTTP:Cookie} (^|;\s*)lang_pref=fr-FR(;|$) [NC]
-  RewriteRule ^$ /fr-FR/ [R=302,L]
-
-  RewriteCond %{REQUEST_URI} ^/?$
-  RewriteCond %{HTTP:Cookie} (^|;\s*)lang_pref=de-DE(;|$) [NC]
-  RewriteRule ^$ /de-DE/ [R=302,L]
-
-  RewriteCond %{REQUEST_URI} ^/?$
-  RewriteCond %{HTTP:Cookie} (^|;\s*)lang_pref=ar(;|$) [NC]
-  RewriteRule ^$ /ar/ [R=302,L]
-
-  RewriteCond %{REQUEST_URI} ^/?$
-  RewriteCond %{HTTP:Cookie} (^|;\s*)lang_pref=zh-Hans(;|$) [NC]
-  RewriteRule ^$ /zh-Hans/ [R=302,L]
-
-  RewriteCond %{REQUEST_URI} ^/?$
   RewriteCond %{HTTP:Cookie} (^|;\s*)lang_pref=en-GB(;|$) [NC]
   RewriteRule ^$ /en-GB/ [R=302,L]
 
@@ -35,29 +15,22 @@
   RewriteRule ^$ /en-US/ [R=302,L]
 
   RewriteCond %{REQUEST_URI} ^/?$
-  RewriteCond %{HTTP:Accept-Language} (^|,)\s*es(?:-ES)? [NC]
-  RewriteRule ^$ /es-ES/ [R=302,L]
-
-  RewriteCond %{REQUEST_URI} ^/?$
-  RewriteCond %{HTTP:Accept-Language} (^|,)\s*fr(?:-FR)? [NC]
-  RewriteRule ^$ /fr-FR/ [R=302,L]
-
-  RewriteCond %{REQUEST_URI} ^/?$
-  RewriteCond %{HTTP:Accept-Language} (^|,)\s*de(?:-DE)? [NC]
-  RewriteRule ^$ /de-DE/ [R=302,L]
-
-  RewriteCond %{REQUEST_URI} ^/?$
-  RewriteCond %{HTTP:Accept-Language} (^|,)\s*ar(?:-[A-Z]{2})? [NC]
-  RewriteRule ^$ /ar/ [R=302,L]
-
-  RewriteCond %{REQUEST_URI} ^/?$
-  RewriteCond %{HTTP:Accept-Language} (^|,)\s*zh(?:-Hans|-CN|-SG)? [NC]
-  RewriteRule ^$ /zh-Hans/ [R=302,L]
-
-  RewriteCond %{REQUEST_URI} ^/?$
   RewriteRule ^$ /en-GB/ [R=302,L]
 
-  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_URI} ^/(?:api|mcp)/?$ [NC]
+  RewriteCond %{HTTP:Cookie} (^|;\s*)lang_pref=en-US(;|$) [NC]
+  RewriteRule ^(?:api|mcp)/?$ /en-US/api/ [R=302,L]
+
+  RewriteCond %{REQUEST_URI} ^/(?:api|mcp)/?$ [NC]
+  RewriteRule ^(?:api|mcp)/?$ /en-GB/api/ [R=302,L]
+
+  RewriteRule ^(en-GB|en-US)/api$ /$1/api/ [R=308,L,NE]
+  RewriteRule ^(en-GB|en-US)/mcp/?$ /$1/api/ [R=308,L,NE]
+  RewriteRule ^(en-GB|en-US)/app(?:/.*)?$ /$1/ [R=308,L,NE]
+  RewriteRule ^(privacy|terms)$ /$1/ [R=308,L,NE]
+
+  # Do not expose the Vite app shell as a second, metadata-poor homepage.
+  RewriteRule ^index\.html$ /en-GB/ [R=308,L,NE]
 
   # Hashed build assets must never fall through to the HTML app shell. Returning
   # a real 404 makes stale cached pages fail visibly instead of serving HTML with
@@ -70,7 +43,9 @@
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  RewriteRule ^ index.html [L]
+  # Marketing routes are emitted as real files/directories. Unknown routes must
+  # remain real 404s instead of inheriting the home-page shell and index signals.
+  RewriteRule ^ - [R=404,L]
 </IfModule>
 
 <IfModule mod_headers.c>
@@ -82,4 +57,12 @@
   <FilesMatch "\.(?:css|js)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
+  <FilesMatch "\.(?:png|jpe?g|webp|svg|ico)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "DENY"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; connect-src 'self' https://alt-text-gen-pro-backend-4e3b4315d0d7.herokuapp.com; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; object-src 'none'; script-src 'self'; style-src 'self'; upgrade-insecure-requests"
 </IfModule>

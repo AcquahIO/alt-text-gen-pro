@@ -49,7 +49,7 @@ export function stripLocalePrefix(pathname: string): string {
 export function buildLocalizedPath(locale: Locale, pathname: string): string {
   const raw = stripLocalePrefix(pathname || '/');
   const normalized = raw === '/' ? '' : raw.replace(/\/+$/, '');
-  return normalized ? `/${locale}${normalized}` : `/${locale}/`;
+  return normalized ? `/${locale}${normalized}/` : `/${locale}/`;
 }
 
 export function getLocaleCookie(cookieValue?: string): Locale | null {

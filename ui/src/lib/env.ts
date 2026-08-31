@@ -41,7 +41,10 @@ async function adoptOrigin(origin: string | null, known: Set<string>): Promise<s
 
 export async function getAppBaseUrl(): Promise<string> {
   const envOrigin = normalizeBaseUrl((import.meta as any)?.env?.VITE_APP_BASE_URL);
-  const manifest = typeof chrome !== 'undefined' ? chrome.runtime?.getManifest?.() : undefined;
+  const rawManifest = typeof chrome !== 'undefined' ? chrome.runtime?.getManifest?.() : undefined;
+  const manifest: ManifestLike = rawManifest && 'host_permissions' in rawManifest
+    ? { host_permissions: rawManifest.host_permissions }
+    : undefined;
   const knownOrigins = buildKnownOrigins({ envOrigin, manifest });
 
   const envCandidate = await adoptOrigin(envOrigin, knownOrigins);
@@ -66,7 +69,7 @@ export async function getAppBaseUrl(): Promise<string> {
 
     try {
       const manifestEntry = chrome.runtime?.getManifest?.()
-        ?.host_permissions?.find((entry) => entry && /^https?:/.test(entry) && !entry.includes('localhost'));
+        ?.host_permissions?.find((entry: string) => entry && /^https?:/.test(entry) && !entry.includes('localhost'));
       const fromManifest = await adoptOrigin(normalizeBaseUrl(manifestEntry?.replace(/\*.*$/, '')), knownOrigins);
       if (fromManifest) return fromManifest;
     } catch (err) {

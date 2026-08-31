@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getAppBaseUrl } from './env';
-import { getLocal, removeLocal, setLocal } from './extension';
+import { getLocal, isExtensionEnvironment, removeLocal, setLocal } from './extension';
 
 export type Plan = 'free' | 'trial' | 'paid';
 export type ClientScope = 'web' | 'chrome' | 'shopify' | 'wordpress';
@@ -28,6 +28,34 @@ export interface BillingCatalogEntry {
   current: boolean;
 }
 
+export type UsagePeriod = 'hour' | 'day' | 'month';
+
+export interface UsageSnapshot {
+  hour: number;
+  day: number;
+  month: number;
+}
+
+export interface UsageLimits {
+  hour: number;
+  day: number;
+  month: number;
+}
+
+export interface UsageAllowance {
+  period: UsagePeriod;
+  used: number;
+  limit: number;
+  remaining: number;
+  percentUsed: number;
+}
+
+export interface BillingIssueSummary {
+  kind: 'past_due' | 'payment_method_required';
+  title: string;
+  detail: string;
+}
+
 export interface SubscriptionStatus {
   plan: Plan;
   activePlanCode?: PlanCode | null;
@@ -37,7 +65,10 @@ export interface SubscriptionStatus {
   providerPortalUrl?: string | null;
   hasStripeCustomer?: boolean;
   trialEligible?: boolean;
+  billingIssue?: BillingIssueSummary | null;
   entitlements?: Partial<EntitlementMatrix>;
+  limits?: UsageLimits;
+  usage?: UsageSnapshot;
   catalog?: BillingCatalogEntry[];
 }
 
@@ -67,15 +98,66 @@ export interface SessionHook {
 
 const AUTH_STORAGE_KEY = 'auth';
 const CLOCK_SKEW_MS = 30_000; // Trim 30s to account for clock drift.
+const COMMAND_PREVIEW = !isExtensionEnvironment
+  && typeof window !== 'undefined'
+  && new URLSearchParams(window.location.search).get('preview') === 'command';
+
+const COMMAND_PREVIEW_SESSION: Session = {
+  status: 'signedIn',
+  auth: {
+    token: 'preview-only',
+    expiresAt: Date.now() + 60 * 60 * 1000,
+    userId: 'preview-user',
+    email: 'charles@acquah.io',
+    displayName: 'Charles Acquah-Davis',
+    avatarUrl: null,
+  },
+  sub: {
+    plan: 'paid',
+    activePlanCode: 'plan_chrome',
+    currentSubscriptionStatus: 'active',
+    hasStripeCustomer: true,
+    trialEligible: false,
+    renewsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+    billingIssue: null,
+    entitlements: { chrome: true, web: false, shopify: false, wordpress: false, all: false },
+    limits: { hour: 60, day: 200, month: 5000 },
+    usage: { hour: 3, day: 18, month: 243 },
+  },
+};
+
+export function getUsageAllowance(
+  subscription: SubscriptionStatus | null | undefined,
+  period: UsagePeriod = 'month',
+): UsageAllowance | null {
+  const used = subscription?.usage?.[period];
+  const limit = subscription?.limits?.[period];
+  if (
+    typeof used !== 'number'
+    || !Number.isFinite(used)
+    || typeof limit !== 'number'
+    || !Number.isFinite(limit)
+    || limit <= 0
+  ) {
+    return null;
+  }
+
+  const safeUsed = Math.max(0, Math.floor(used));
+  const safeLimit = Math.max(1, Math.floor(limit));
+  return {
+    period,
+    used: safeUsed,
+    limit: safeLimit,
+    remaining: Math.max(0, safeLimit - safeUsed),
+    percentUsed: Math.min(100, Math.round((safeUsed / safeLimit) * 100)),
+  };
+}
 
 function bufferDecode(input: string) {
   const normalized = input.replace(/-/g, '+').replace(/_/g, '/');
   const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
   if (typeof atob === 'function') {
     return atob(padded);
-  }
-  if (typeof Buffer !== 'undefined') {
-    return Buffer.from(padded, 'base64').toString('binary');
   }
   throw new Error('Base64 decoding not supported in this environment.');
 }
@@ -164,19 +246,25 @@ function randomState(bytes = 16): string {
   return Array.from(arr, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-function assertChromeIdentity(): asserts chrome is typeof chrome {
+function assertChromeIdentity(): void {
   if (typeof chrome === 'undefined' || !chrome.identity?.launchWebAuthFlow) {
     throw new Error('Chrome identity API is unavailable in this context.');
   }
 }
 
 export function useSession(): SessionHook {
-  const [session, setSession] = useState<Session>({ status: 'loading' });
+  const [session, setSession] = useState<Session>(COMMAND_PREVIEW ? COMMAND_PREVIEW_SESSION : { status: 'loading' });
   const [baseUrl, setBaseUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const latestAuth = useRef<AuthState | null>(null);
 
   const load = useCallback(async () => {
+    if (COMMAND_PREVIEW) {
+      latestAuth.current = COMMAND_PREVIEW_SESSION.auth ?? null;
+      setSession(COMMAND_PREVIEW_SESSION);
+      setError(null);
+      return;
+    }
     const resolvedBase = await getAppBaseUrl();
     setBaseUrl(resolvedBase);
     const stored = await readAuth();
@@ -306,6 +394,24 @@ export function useSession(): SessionHook {
     }
     return () => {};
   }, [retry]);
+
+  useEffect(() => {
+    if (session.status !== 'signedIn' || typeof window === 'undefined') return () => {};
+    let lastRefresh = 0;
+    const refreshAfterReturn = () => {
+      if (document.visibilityState === 'hidden') return;
+      const now = Date.now();
+      if (now - lastRefresh < 1_000) return;
+      lastRefresh = now;
+      void retry();
+    };
+    window.addEventListener('focus', refreshAfterReturn);
+    document.addEventListener('visibilitychange', refreshAfterReturn);
+    return () => {
+      window.removeEventListener('focus', refreshAfterReturn);
+      document.removeEventListener('visibilitychange', refreshAfterReturn);
+    };
+  }, [retry, session.status]);
 
   return useMemo(
     () => ({ session, baseUrl, error, signIn, signOut, retry }),

@@ -1,16 +1,13 @@
 import { buildLocalizedPath, Locale, stripLocalePrefix } from '@/i18n/config';
 
-export type RouteId = 'landing' | 'app' | 'authCallback' | 'billingSuccess' | 'billingCancel';
+export type RouteId = 'landing' | 'agentApi';
 
 export const ROUTE_PATHS: Record<RouteId, string> = {
   landing: '/',
-  app: '/app',
-  authCallback: '/app/auth/callback',
-  billingSuccess: '/app/billing/success',
-  billingCancel: '/app/billing/cancel',
+  agentApi: '/api/',
 };
 
-const INDEXABLE_ROUTES = new Set<RouteId>(['landing']);
+const INDEXABLE_ROUTES = new Set<RouteId>(['landing', 'agentApi']);
 
 function normalizePath(pathname: string): string {
   const stripped = stripLocalePrefix(pathname || '/');

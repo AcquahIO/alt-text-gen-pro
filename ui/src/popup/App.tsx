@@ -3,36 +3,60 @@ import { RecentImage } from '@/components/RecentImage';
 import { UploadSection } from '@/components/UploadSection';
 import { Toaster } from '@/components/ui/sonner';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import brandIcon from '@extension/icons/icon-128.png';
 import { filesToPendingEntries } from '@/lib/uploads';
 import {
   clearRecentItems,
+  getPendingUploads,
   getPreferredLanguage,
   getRecentItems,
   getSavedContext,
   openFullPageView,
-  getRuntimeUrl,
   setPreferredLanguage,
   setSavedContext,
   storePendingUploads,
   queueActiveTabImagesForFullPage,
 } from '@/lib/extension';
-import { RecentAltItem } from '@/lib/types';
-import { type PlanCode, useSession } from '@/lib/session';
+import { PendingUploadEntry, RecentAltItem } from '@/lib/types';
+import { getUsageAllowance, type PlanCode, useSession } from '@/lib/session';
 import { PlanBadge } from './components/PlanBadge';
 import { Avatar } from './components/Avatar';
-
-const UNLOCKED_SCOPE_LABELS = {
-  web: 'Web',
-  chrome: 'Chrome',
-  shopify: 'Shopify',
-  wordpress: 'WordPress',
-} as const;
+import { ChevronDown, Loader2, UserRound } from 'lucide-react';
 
 interface ApiResult<T> {
   data?: T;
   error?: string;
 }
+
+function accountLabel(displayName: string, email: string): string {
+  const source = displayName && !displayName.includes('@') ? displayName : email.split('@')[0] || 'Account';
+  const first = source.trim().split(/[\s._-]+/)[0] || 'Account';
+  return first.charAt(0).toUpperCase() + first.slice(1);
+}
+
+const COMMAND_PREVIEW = typeof window !== 'undefined'
+  && new URLSearchParams(window.location.search).get('preview') === 'command';
+
+const COMMAND_PREVIEW_ENTRIES: PendingUploadEntry[] = [
+  {
+    name: 'oak-chair-front.jpg',
+    type: 'image/jpeg',
+    size: 1180000,
+    sourceUrl: '../apps/web/public/assets/seo-alt-text-hero.jpg',
+  },
+  {
+    name: 'oak-side-table.jpg',
+    type: 'image/png',
+    size: 1320000,
+    sourceUrl: '../apps/web/public/assets/oak-side-table-studio.jpg',
+  },
+  {
+    name: 'pear-bowl.jpg',
+    type: 'image/png',
+    size: 1270000,
+    sourceUrl: '../apps/web/public/assets/pear-bowl-studio.jpg',
+  },
+];
 
 async function callAuthorizedApi<T = any>(
   baseUrl: string,
@@ -107,33 +131,52 @@ export default function PopupApp() {
 
   const [language, setLanguage] = useState('');
   const [context, setContext] = useState('');
+  const [queuedEntries, setQueuedEntries] = useState<PendingUploadEntry[]>([]);
   const [message, setMessage] = useState('');
   const [showDebug, setShowDebug] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement | null>(null);
   const prevSessionStatus = useRef(session.status);
   const activeUserId = session.status === 'signedIn' ? String(session.auth?.userId || '') : '';
   const { preparedRecents, clearRecents } = useRecentItems(activeUserId, session.status === 'signedIn');
-  const unlockedScopes = useMemo(() => {
-    if (entitlements?.all) return ['All products'];
-    return (Object.keys(UNLOCKED_SCOPE_LABELS) as Array<keyof typeof UNLOCKED_SCOPE_LABELS>)
-      .filter((scope) => Boolean(entitlements?.[scope]))
-      .map((scope) => UNLOCKED_SCOPE_LABELS[scope]);
-  }, [entitlements]);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const [lang, ctx] = await Promise.all([
+      const [lang, ctx, pending] = await Promise.all([
         getPreferredLanguage().catch(() => ''),
         getSavedContext().catch(() => ''),
+        getPendingUploads().catch(() => null),
       ]);
       if (!mounted) return;
       setLanguage(lang || '');
-      setContext(ctx || '');
+      setContext(COMMAND_PREVIEW && !ctx ? 'Solid oak dining chair · North & Pine' : (ctx || ''));
+      setQueuedEntries(COMMAND_PREVIEW ? COMMAND_PREVIEW_ENTRIES : (pending?.entries || []));
     })();
     return () => {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!accountOpen) return;
+
+    const closeOnPointerDown = (event: PointerEvent) => {
+      if (!accountMenuRef.current?.contains(event.target as Node)) {
+        setAccountOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setAccountOpen(false);
+    };
+
+    document.addEventListener('pointerdown', closeOnPointerDown);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOnPointerDown);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [accountOpen]);
 
   useEffect(() => {
     if (prevSessionStatus.current !== session.status) {
@@ -155,25 +198,39 @@ export default function PopupApp() {
   const handleFilesSelected = useCallback(
     async (files: FileList) => {
       if (!files.length) return;
-      const entries = await filesToPendingEntries(files);
-      if (!entries.length) return;
-      await Promise.all([
-        storePendingUploads(entries, { language, context }),
-        setPreferredLanguage(language || ''),
-        setSavedContext(context || ''),
-      ]);
-      await openFullPageAndClose();
+      try {
+        const entries = await filesToPendingEntries(files);
+        if (!entries.length) return;
+        const next = [...queuedEntries, ...entries];
+        await Promise.all([
+          storePendingUploads(next, { language, context }),
+          setPreferredLanguage(language || ''),
+          setSavedContext(context || ''),
+        ]);
+        setQueuedEntries(next);
+        setMessage(`${next.length} image${next.length === 1 ? '' : 's'} ready to generate.`);
+      } catch (err) {
+        setMessage(err instanceof Error ? err.message : 'Unable to prepare these images.');
+      }
     },
-    [language, context, openFullPageAndClose],
+    [language, context, queuedEntries],
   );
+
+  const handleRemoveQueued = useCallback(async (index: number) => {
+    const next = queuedEntries.filter((_, entryIndex) => entryIndex !== index);
+    setQueuedEntries(next);
+    await storePendingUploads(next, { language, context });
+    setMessage(next.length ? `${next.length} image${next.length === 1 ? '' : 's'} ready to generate.` : 'Queue cleared.');
+  }, [context, language, queuedEntries]);
 
   const handleOpenFullPage = useCallback(async () => {
     await Promise.all([
+      storePendingUploads(queuedEntries, { language, context }),
       setPreferredLanguage(language || ''),
       setSavedContext(context || ''),
     ]);
     await openFullPageAndClose();
-  }, [language, context, openFullPageAndClose]);
+  }, [language, context, openFullPageAndClose, queuedEntries]);
 
   const handleGenerateCurrentPage = useCallback(async () => {
     await Promise.all([
@@ -181,10 +238,13 @@ export default function PopupApp() {
       setSavedContext(context || ''),
     ]);
     try {
-      const queued = await queueActiveTabImagesForFullPage({ language, context });
-      if (!queued) {
+      const result = await queueActiveTabImagesForFullPage({ language, context });
+      if (!result.queued) {
         setMessage('No images found on this page.');
         return;
+      }
+      if (result.truncated) {
+        setMessage(`Queued ${result.queued} of ${result.discovered} images (page scans are limited to 20).`);
       }
       await openFullPageAndClose();
     } catch (err) {
@@ -257,18 +317,10 @@ export default function PopupApp() {
     });
   }, [startCheckout]);
 
-  const startAllAccessSubscription = useCallback(async () => {
-    await startCheckout('plan_all_access', {
-      skipTrial: session.sub?.trialEligible === false,
-      preparingMessage: 'Preparing All Access checkout…',
-      successMessage: 'All Access checkout opened in a new tab.',
-    });
-  }, [session.sub?.trialEligible, startCheckout]);
-
   const openBillingPortal = useCallback(async () => {
     if (!(await ensureSignedIn()) || !baseUrl || !token) return;
     if (!session.sub?.hasStripeCustomer) {
-      setMessage('Choose Chrome or All Access to start your first paid subscription.');
+      setMessage('Subscribe to Chrome to start your paid subscription.');
       return;
     }
     if (session.sub?.providerPortalUrl) {
@@ -297,15 +349,17 @@ export default function PopupApp() {
 
   const handleManageOrUpgrade = useCallback(async () => {
     if (plan === 'free') {
+      setAccountOpen(true);
       if (session.sub?.trialEligible === false) {
-        setMessage('Your free trial has already been used. Choose Chrome or All Access to keep generating alt text.');
+        setMessage('Your free trial has already been used. Subscribe to Chrome to keep generating alt text.');
       } else {
-        setMessage('Choose Chrome or All Access above to unlock extension generation.');
+        setMessage('Start your free trial or subscribe to Chrome from the account menu.');
       }
       return;
     }
     if (plan === 'trial' && !session.sub?.hasStripeCustomer) {
-      setMessage('You’re still on your free trial. Select Chrome or All Access to start your paid subscription immediately.');
+      setAccountOpen(true);
+      setMessage('You’re on the free trial. Subscribe to Chrome when you are ready to continue.');
       return;
     }
     await openBillingPortal();
@@ -326,192 +380,174 @@ export default function PopupApp() {
   }, []);
 
   const authDisplayName = session.status === 'signedIn' ? session.auth?.displayName ?? session.auth?.email ?? '' : '';
+  const authEmail = session.status === 'signedIn' ? session.auth?.email ?? '' : '';
+  const accountTriggerLabel = accountLabel(authDisplayName, authEmail);
   const avatarUrl = session.status === 'signedIn' ? session.auth?.avatarUrl ?? null : null;
   const hasStripeCustomer = session.status === 'signedIn' ? Boolean(session.sub?.hasStripeCustomer) : false;
+  const billingIssue = session.status === 'signedIn' ? session.sub?.billingIssue ?? null : null;
+  const monthlyAllowance = session.status === 'signedIn'
+    ? getUsageAllowance(session.sub, 'month')
+    : null;
+  const usage = session.status === 'signedIn' ? session.sub?.usage : undefined;
+  const limits = session.status === 'signedIn' ? session.sub?.limits : undefined;
+  const accountStatusLabel = billingIssue
+    ? 'Billing needs attention'
+    : plan === 'trial'
+      ? 'Chrome trial active'
+      : hasAccess
+        ? 'Chrome subscription active'
+        : 'Chrome access not active';
 
   const disabledMessage = useMemo(() => {
     if (session.status === 'loading') return 'Loading session…';
     if (session.status !== 'signedIn') return 'Sign in to start your free trial and generate alt text.';
-    if (!hasAccess) return 'Your current account does not include Chrome generation. Upgrade to Chrome or All Access.';
+    if (!hasAccess) return 'Your account does not include Chrome generation. Start a trial or Chrome subscription.';
     return undefined;
   }, [session.status, hasAccess]);
 
   return (
-    <div className="w-[500px] min-h-[600px] text-foreground" style={{ background: '#f8fbff' }}>
-      <div
-        className="flex items-center gap-3 px-6 py-4 border-b select-none"
-        style={{
-          borderColor: '#dbeafe',
-          background: '#ffffff',
-        }}
-        onClick={handleDebugToggle}
-      >
-        <img src={getRuntimeUrl('icons/icon-32.png')} alt="Alt Text Generator" className="w-7 h-7 rounded-md" />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <h1 className="text-lg font-semibold" style={{ lineHeight: 1.1, letterSpacing: '-0.01em', color: '#0b1b44' }}>
-            Alt Text Generator
-          </h1>
-          <p className="text-xs text-muted-foreground">Generate high-quality image descriptions</p>
+    <div className="command-popup">
+      <header className="command-appbar">
+        <div className="command-brand" onClick={handleDebugToggle}>
+          <img src={brandIcon} alt="Alt Text Generator Pro" className="command-brand__icon" />
+          <div className="command-brand__copy">
+            <h1 className="command-brand__title">Alt Text Generator Pro</h1>
+            {session.status === 'signedIn' ? <PlanBadge plan={plan} trialEndsAt={session.sub?.trialEndsAt} /> : null}
+          </div>
         </div>
-        {showDebug && (
-          <Badge variant="outline" className="ml-auto">
-            Debug
-          </Badge>
-        )}
-      </div>
 
-      <div className="p-6 space-y-5">
-        <div
-          className="rounded-xl border p-4 space-y-3 shadow-sm"
-          style={{
-            borderColor: '#dbeafe',
-            background: '#ffffff',
-            boxShadow: '0 2px 12px rgba(30, 58, 138, 0.06)',
-          }}
-        >
-          {session.status === 'signedIn' ? (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {session.status === 'signedIn' ? (
+          <div className="command-account-menu" ref={accountMenuRef}>
+            <button
+              type="button"
+              className="command-account"
+              onClick={() => setAccountOpen((open) => !open)}
+              aria-expanded={accountOpen}
+              aria-controls="command-account-dropdown"
+            >
+              <UserRound size={17} strokeWidth={1.9} aria-hidden="true" />
+              <span className="command-account__label">{accountTriggerLabel}</span>
+              <ChevronDown
+                size={15}
+                aria-hidden="true"
+                style={{ transform: accountOpen ? 'rotate(180deg)' : undefined, transition: 'transform 150ms ease' }}
+              />
+            </button>
+
+            {accountOpen ? (
+              <section id="command-account-dropdown" className="command-account-dropdown" aria-label="Account options">
+                <div className="command-account-profile">
                   <Avatar url={avatarUrl ?? undefined} name={authDisplayName} tone={plan} />
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <p className="text-sm font-semibold text-foreground">Signed in</p>
-                      <PlanBadge plan={plan} trialEndsAt={session.sub?.trialEndsAt} />
-                    </div>
-                    <p className="text-sm text-muted-foreground">{authDisplayName}</p>
+                  <div className="command-account-profile__copy">
+                    <strong>{authDisplayName || authEmail}</strong>
+                    <span>{authEmail}</span>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                  {plan === 'free' && session.sub?.trialEligible !== false && (
-                    <Button variant="outline" size="sm" onClick={startTrial}>
-                      Start Chrome trial
-                    </Button>
-                  )}
-                  {(plan === 'free' || (plan === 'trial' && !hasStripeCustomer)) && (
-                    <Button
-                      size="sm"
-                      onClick={startChromeSubscription}
-                      style={{
-                        backgroundColor: '#0b1b44',
-                        color: '#ffffff',
-                        border: '1px solid #0b1b44',
-                        borderRadius: 12,
-                      }}
-                    >
-                      Subscribe Chrome
-                    </Button>
-                  )}
-                  {(plan === 'free' || (plan === 'trial' && !hasStripeCustomer)) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={startAllAccessSubscription}
-                    >
-                      Get All Access
-                    </Button>
-                  )}
-                  {(plan === 'trial' && hasStripeCustomer) || plan === 'paid' ? (
-                    <Button
-                      size="sm"
-                      onClick={openBillingPortal}
-                      style={{
-                        backgroundColor: '#0b1b44',
-                        color: '#ffffff',
-                        border: '1px solid #0b1b44',
-                        borderRadius: 12,
-                      }}
-                    >
-                      Manage subscription
-                    </Button>
+                <div className={`command-account-status${billingIssue ? ' command-account-status--issue' : ''}`}>
+                  <strong>{accountStatusLabel}</strong>
+                  {plan === 'trial' && session.sub?.trialEndsAt ? (
+                    <span>Trial ends {new Date(session.sub.trialEndsAt).toLocaleDateString()}</span>
+                  ) : plan === 'paid' && session.sub?.renewsAt && !billingIssue ? (
+                    <span>Renews {new Date(session.sub.renewsAt).toLocaleDateString()}</span>
                   ) : null}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleSignOut}
-                    style={{ color: '#dc2626', paddingInline: 8 }}
-                  >
-                    Sign out
-                  </Button>
                 </div>
-              </div>
 
-              <div className="text-xs text-muted-foreground">{session.auth?.email}</div>
-              <div className="flex flex-wrap gap-2">
-                {unlockedScopes.length ? (
-                  unlockedScopes.map((scope) => (
-                    <Badge key={scope} variant="outline">
-                      {scope}
-                    </Badge>
-                  ))
+                <div className="command-account-divider" />
+
+                {billingIssue ? (
+                  <div className="command-billing-issue" role="alert">
+                    <strong>{billingIssue.title}</strong>
+                    <span>{billingIssue.detail}</span>
+                  </div>
+                ) : null}
+
+                {hasAccess ? (
+                  monthlyAllowance ? (
+                    <div className="command-allowance">
+                      <div className="command-allowance__heading">
+                        <div>
+                          <span>Monthly allowance</span>
+                          <strong>{monthlyAllowance.used.toLocaleString()} / {monthlyAllowance.limit.toLocaleString()}</strong>
+                        </div>
+                        <b>{monthlyAllowance.remaining.toLocaleString()} left</b>
+                      </div>
+                      <div
+                        className="command-allowance__track"
+                        role="progressbar"
+                        aria-label="Monthly generation allowance used"
+                        aria-valuemin={0}
+                        aria-valuemax={monthlyAllowance.limit}
+                        aria-valuenow={Math.min(monthlyAllowance.used, monthlyAllowance.limit)}
+                      >
+                        <span style={{ width: `${monthlyAllowance.percentUsed}%` }} />
+                      </div>
+                      {usage && limits ? (
+                        <p>{usage.day.toLocaleString()} / {limits.day.toLocaleString()} today · {usage.hour.toLocaleString()} / {limits.hour.toLocaleString()} this hour</p>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <p className="command-account-muted">Usage allowance is unavailable. Retry the account status.</p>
+                  )
+                ) : null}
+
+                <div className="command-account-divider" />
+
+                {billingIssue && hasStripeCustomer ? (
+                  <Button className="command-primary command-primary--wide" onClick={openBillingPortal}>Resolve billing</Button>
+                ) : plan === 'free' && session.sub?.trialEligible !== false ? (
+                  <>
+                    <Button className="command-primary command-primary--wide" onClick={startTrial}>Start free trial</Button>
+                    <button type="button" className="command-account-link" onClick={startChromeSubscription}>Subscribe to Chrome instead</button>
+                  </>
+                ) : plan === 'free' || (plan === 'trial' && !hasStripeCustomer) || (plan === 'paid' && !hasStripeCustomer) ? (
+                  <>
+                    <Button className="command-primary command-primary--wide" onClick={startChromeSubscription}>Subscribe to Chrome</Button>
+                    {plan === 'free' && session.sub?.trialEligible === false ? (
+                      <p className="command-account-muted">The free trial has already been used on this account.</p>
+                    ) : null}
+                  </>
                 ) : (
-                  <span className="text-xs text-muted-foreground">No product entitlements yet.</span>
+                  <Button className="command-primary command-primary--wide" onClick={openBillingPortal}>Manage subscription</Button>
                 )}
-              </div>
 
-              {session.sub?.renewsAt && plan === 'paid' && (
-                <p className="text-xs text-muted-foreground">Renews on {new Date(session.sub.renewsAt).toLocaleDateString()}</p>
-              )}
-              {plan === 'free' && (
-                <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
-                  {session.sub?.trialEligible === false
-                    ? 'You’ve already used your 3-day trial with this account. Choose Chrome or All Access to keep generating alt text.'
-                    : 'Use the same account across web and Chrome. Start a Chrome trial, subscribe to Chrome, or choose All Access.'}
-                </div>
-              )}
-              {plan === 'trial' && !hasStripeCustomer && (
-                <div className="rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900">
-                  You’re on a free trial. Keep using it, or choose Chrome or All Access to begin your paid subscription immediately.
-                </div>
-              )}
-              {!hasAccess && session.status === 'signedIn' && (
-                <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-                  This account is signed in, but Chrome generation is not unlocked. Web-only access is valid for the web app but not for the extension.
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-sm text-slate-700">
-                  Sign in with the same Alt Text Generator Pro account you use on the web. Billing and entitlements are shared across clients.
-                </p>
-                <Badge variant="outline">You&apos;re signed out</Badge>
-              </div>
-              <div className="flex flex-col gap-2">
-                <Button
-                  onClick={handleSignIn}
-                  disabled={session.status === 'loading'}
-                  style={{
-                    backgroundColor: '#0b1b44',
-                    color: '#ffffff',
-                    border: '1px solid #0b1b44',
-                  }}
-                >
-                  {session.status === 'loading' ? 'Opening sign-in…' : 'Sign in'}
-                </Button>
-              </div>
-            </>
-          )}
-          {error && (
-            <div className="flex items-center justify-between gap-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-              <span>{error}</span>
-              <Button size="sm" variant="outline" onClick={retry}>
-                Retry
-              </Button>
-            </div>
-          )}
-          {message && (
-            <div className="text-sm rounded-md border px-3 py-2" style={{ background: '#eef2ff', borderColor: '#c7d2fe', color: '#3730a3' }}>
-              {message}
-            </div>
-          )}
-        </div>
-
-        {session.status === 'signedIn' && preparedRecents.length > 0 && (
-          <RecentImage items={preparedRecents} onClear={clearRecents} />
+                <div className="command-account-divider" />
+                <Button className="command-danger-button command-signout" variant="ghost" onClick={handleSignOut}>Sign out</Button>
+              </section>
+            ) : null}
+          </div>
+        ) : session.status === 'loading' ? (
+          <Loader2 size={18} className="animate-spin" color="#667085" aria-label="Loading account" />
+        ) : (
+          <PlanBadge plan="free" />
         )}
+      </header>
+
+      {session.status !== 'signedIn' ? (
+        <div className="command-auth-strip">
+          <div className="command-auth-strip__copy">
+            <p className="command-auth-strip__title">Sign in to generate</p>
+            <p className="command-auth-strip__body">Your account, billing and allowance stay with the extension.</p>
+          </div>
+          <Button className="command-primary" onClick={handleSignIn} disabled={session.status === 'loading'}>
+            {session.status === 'loading' ? 'Opening…' : 'Sign in'}
+          </Button>
+        </div>
+      ) : null}
+
+      <main className="command-main">
+        {error ? (
+          <div className="command-notice command-notice--error" style={{ marginTop: 14 }}>
+            <span>{error}</span>
+            <Button className="command-secondary" size="sm" onClick={retry}>Retry</Button>
+          </div>
+        ) : null}
+
+        {message ? <div className="command-notice command-notice--info" style={{ marginTop: 14 }}>{message}</div> : null}
+
+        {session.status === 'signedIn' && preparedRecents.length > 0 ? (
+          <RecentImage items={preparedRecents} onClear={clearRecents} />
+        ) : null}
 
         <UploadSection
           language={language}
@@ -524,8 +560,11 @@ export default function PopupApp() {
             setContext(value);
             await setSavedContext(value);
           }}
+          queuedItems={queuedEntries}
           onFilesSelected={handleFilesSelected}
+          onRemoveQueued={handleRemoveQueued}
           onOpenFullPage={handleOpenFullPage}
+          onGenerateUploads={handleOpenFullPage}
           onGenerateCurrentPage={handleGenerateCurrentPage}
           disabled={!hasAccess || session.status === 'loading'}
           disabledMessage={disabledMessage}
@@ -538,24 +577,12 @@ export default function PopupApp() {
           }}
         />
 
-        {showDebug && (
-          <div className="rounded-lg border bg-slate-50 p-3 text-[11px] text-slate-600 space-y-1">
-            <div>
-              <strong>Base:</strong> {baseUrl ?? 'resolving…'}
-            </div>
-            {session.status === 'signedIn' && session.auth && (
-              <>
-                <div>
-                  <strong>Token expires:</strong> {new Date(session.auth.expiresAt).toLocaleString()}
-                </div>
-                <div>
-                  <strong>Plan:</strong> {JSON.stringify(session.sub ?? null)}
-                </div>
-              </>
-            )}
+        {showDebug ? (
+          <div className="command-notice command-notice--info" style={{ marginBottom: 12 }}>
+            Base: {baseUrl ?? 'resolving…'} · Plan: {JSON.stringify(session.status === 'signedIn' ? session.sub ?? null : null)}
           </div>
-        )}
-      </div>
+        ) : null}
+      </main>
       <Toaster richColors position="top-center" />
     </div>
   );

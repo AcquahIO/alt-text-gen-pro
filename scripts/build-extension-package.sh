@@ -22,6 +22,9 @@ zip -q -r -FS "${archive}" \
   icons/icon-128.png \
   icons/icon-256.png \
   icons/icon-512.png \
+  icons/ui-copy.svg \
+  icons/ui-refresh-cw.svg \
+  icons/ui-x.svg \
   ui-dist \
   utils/composeAltText.js \
   utils/env.js \

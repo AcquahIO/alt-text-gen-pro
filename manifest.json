@@ -30,10 +30,14 @@
   "web_accessible_resources": [
     {
       "resources": [
+        "icons/icon-128.png",
         "icons/icon-32.png",
         "icons/icon-16.png",
         "icons/action-icon-32.png",
-        "icons/action-icon-16.png"
+        "icons/action-icon-16.png",
+        "icons/ui-copy.svg",
+        "icons/ui-refresh-cw.svg",
+        "icons/ui-x.svg"
       ],
       "matches": ["http://*/*", "https://*/*"]
     }

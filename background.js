@@ -172,7 +172,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         language: message?.language,
         context: message?.context,
       });
-      sendResponse({ ok: true, queued });
+      sendResponse({ ok: true, ...queued });
       return;
     }
   })().catch((e) => {
@@ -224,9 +224,9 @@ async function getActiveTabId() {
 }
 
 async function queuePageImagesForFullPage({ tabId, language, context } = {}) {
-  if (!Number.isInteger(tabId)) return 0;
+  if (!Number.isInteger(tabId)) return { queued: 0, discovered: 0, truncated: false };
   const pageImages = await collectPageImagesFromTab(tabId);
-  if (!pageImages.length) return 0;
+  if (!pageImages.length) return { queued: 0, discovered: 0, truncated: false };
 
   const deduped = [];
   const seen = new Set();
@@ -238,12 +238,18 @@ async function queuePageImagesForFullPage({ tabId, language, context } = {}) {
     if (deduped.length >= MAX_PAGE_CONTEXT_IMAGES) break;
   }
 
+  const discovered = new Set(
+    pageImages
+      .map((item) => String(item?.url || ''))
+      .filter(Boolean),
+  ).size;
+
   const entries = [];
   for (let i = 0; i < deduped.length; i++) {
     const entry = await buildPendingEntryFromImageCandidate(deduped[i], i);
     if (entry) entries.push(entry);
   }
-  if (!entries.length) return 0;
+  if (!entries.length) return { queued: 0, discovered, truncated: discovered > MAX_PAGE_CONTEXT_IMAGES };
 
   const [syncCfg, localCfg] = await Promise.all([
     chrome.storage.sync.get({ preferredLanguage: '' }).catch(() => ({ preferredLanguage: '' })),
@@ -251,6 +257,9 @@ async function queuePageImagesForFullPage({ tabId, language, context } = {}) {
   ]);
   const finalLanguage = String((language ?? syncCfg.preferredLanguage ?? '') || '');
   const finalContext = String((context ?? localCfg.globalContext ?? '') || '');
+  const notice = discovered > MAX_PAGE_CONTEXT_IMAGES
+    ? `Queued ${entries.length} of ${discovered} images. Page scans are limited to ${MAX_PAGE_CONTEXT_IMAGES} images at a time.`
+    : '';
 
   await chrome.storage.local.set({
     pendingUploads: {
@@ -258,9 +267,14 @@ async function queuePageImagesForFullPage({ tabId, language, context } = {}) {
       entries,
       language: finalLanguage,
       context: finalContext,
+      notice,
     },
   });
-  return entries.length;
+  return {
+    queued: entries.length,
+    discovered,
+    truncated: discovered > MAX_PAGE_CONTEXT_IMAGES,
+  };
 }
 
 async function collectPageImagesFromTab(tabId) {
@@ -272,8 +286,8 @@ async function collectPageImagesFromTab(tabId) {
       await ensureContentScript(tabId);
       const response2 = await sendToContent(tabId, { type: 'collectPageImages' });
       return Array.isArray(response2?.images) ? response2.images : [];
-    } catch {
-      return [];
+    } catch (secondError) {
+      throw new Error(`This page does not allow image scanning: ${secondError?.message || 'access denied'}`);
     }
   }
 }
@@ -294,7 +308,25 @@ async function buildPendingEntryFromImageCandidate(candidate, index) {
   const name = sanitizeImageName(candidate?.name || fallbackName);
   const type = getMimeFromDataUrl(dataUrl) || String(candidate?.type || '') || 'image/jpeg';
   const size = dataUrl ? estimateDataUrlBytes(dataUrl) : 0;
-  return { name, type, size, dataUrl, sourceUrl };
+  const candidateContext = candidate?.context && typeof candidate.context === 'object' ? candidate.context : {};
+  const pageContext = [
+    candidateContext.title,
+    candidateContext.meta,
+    candidateContext.nearestHeading,
+    candidateContext.anchorText,
+    candidateContext.alt,
+  ].filter(Boolean).join(' | ').slice(0, 4000);
+  return {
+    name,
+    type,
+    size,
+    dataUrl,
+    sourceUrl,
+    pageContext,
+    contentTitle: String(candidateContext.nearestHeading || candidateContext.title || '').slice(0, 500),
+    imageNotes: String(candidateContext.dataHints || candidateContext.aria || '').slice(0, 1000),
+    imageRole: String(candidateContext.explicitRole || '').slice(0, 100),
+  };
 }
 
 function deriveImageName(url, index) {
@@ -350,9 +382,10 @@ async function callBackendEndpoint(endpoint, imageUrlOrDataUrl, ctx, sharedKey, 
   const payload = {
     context: {
       client_scope: 'chrome',
-      page_context: [ctx?.nearestHeading, ctx?.meta, ctx?.title, ctx?.userContext].filter(Boolean).join(' | '),
+      page_context: [ctx?.nearestHeading, ctx?.meta, ctx?.title, ctx?.pageContext, ctx?.userContext].filter(Boolean).join(' | '),
       content_title: ctx?.nearestHeading || ctx?.title || '',
-      focus_keyword: ctx?.userContext || '',
+      focus_keyword: ctx?.focusKeyword || ctx?.userContext || '',
+      brand: ctx?.brand || '',
       image_role: inferRole(ctx),
       image_notes: ctx?.dataHints || '',
     },
@@ -490,6 +523,9 @@ export function getPageContext(raw) {
     pageLang: raw?.pageLang || '',
     meta: raw?.meta || '',
     userContext: raw?.userContext || '',
+    pageContext: raw?.pageContext || '',
+    focusKeyword: raw?.focusKeyword || '',
+    brand: raw?.brand || '',
   };
   return ctx;
 }

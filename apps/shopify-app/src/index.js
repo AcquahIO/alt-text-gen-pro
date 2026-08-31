@@ -4,23 +4,27 @@ import express from 'express';
 import morgan from 'morgan';
 import { env } from './env.js';
 import { buildAuthorizeUrl, isValidShopDomain, verifyOAuthQueryHmac, verifyWebhookHmac } from './shopify.js';
-import { getShopToken, linkShopAccount, listShops, upsertShopToken } from './tokenStore.js';
+import { getShopToken, linkShopAccount, upsertShopToken } from './tokenStore.js';
 
 const app = express();
 const stateStore = new Map();
 const accountLinkStateStore = new Map();
 const STATE_TTL_MS = 5 * 60 * 1000;
+const SHOPIFY_TIMESTAMP_WINDOW_SECONDS = 10 * 60;
 
-app.use(morgan('dev'));
+// OAuth callback URLs contain short-lived codes, state, and HMAC values. Log
+// only the path so those credentials never land in application logs.
+morgan.token('path-only', (req) => req.path);
+app.use(morgan(':method :path-only :status'));
 app.use(express.urlencoded({ extended: false }));
 
 setInterval(() => clearExpiredStateEntries(), 60_000).unref();
 
 app.get('/health', (_req, res) => {
+  res.set('Cache-Control', 'no-store');
   res.json({
     ok: true,
     app: 'alt-text-generator-pro-shopify-app',
-    installedShops: listShops().length,
   });
 });
 
@@ -35,7 +39,7 @@ app.get('/app', (req, res) => {
   const host = typeof req.query.host === 'string' ? req.query.host : '';
   const installation = getShopToken(shop);
 
-  res.type('html').send(
+  res.set('Cache-Control', 'no-store').type('html').send(
     renderAdminHtml({
       shop,
       installation,
@@ -80,6 +84,9 @@ app.get('/auth/callback', async (req, res) => {
   if (!verifyOAuthQueryHmac(params, env.SHOPIFY_API_SECRET)) {
     return res.status(401).send('Invalid callback signature.');
   }
+  if (!isFreshShopifyTimestamp(params.timestamp)) {
+    return res.status(401).send('Expired callback. Restart the Shopify install flow.');
+  }
 
   const stateRecord = stateStore.get(state);
   stateStore.delete(state);
@@ -99,8 +106,8 @@ app.get('/auth/callback', async (req, res) => {
     });
 
     if (!tokenRes.ok) {
-      const body = await tokenRes.text();
-      return res.status(400).send(`Unable to exchange access token: ${body}`);
+      await tokenRes.arrayBuffer().catch(() => undefined);
+      return res.status(400).send('Unable to exchange the Shopify access token. Restart the install flow.');
     }
 
     const tokenPayload = await tokenRes.json();
@@ -221,10 +228,6 @@ app.post('/webhooks/shopify/app-subscriptions/update', express.raw({ type: 'appl
 
 app.use(express.json({ limit: '2mb' }));
 
-app.get('/api/shops', (_req, res) => {
-  res.json({ shops: listShops() });
-});
-
 app.listen(env.PORT, () => {
   console.log(`Shopify app listening on http://localhost:${env.PORT}`);
 });
@@ -237,6 +240,12 @@ function clearExpiredStateEntries() {
   for (const [state, record] of accountLinkStateStore.entries()) {
     if (record.expiresAt <= now) accountLinkStateStore.delete(state);
   }
+}
+
+function isFreshShopifyTimestamp(value) {
+  const timestamp = Number(Array.isArray(value) ? value[0] : value);
+  return Number.isInteger(timestamp)
+    && Math.abs(Math.floor(Date.now() / 1000) - timestamp) <= SHOPIFY_TIMESTAMP_WINDOW_SECONDS;
 }
 
 async function notifyBackendInstall({ shop, accessToken }) {

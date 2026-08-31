@@ -1,0 +1,9 @@
+{
+  "landingIntro": "Collect page images, add useful context, generate concise SEO-aware alt text, review every result, and copy or download it without leaving Chrome.",
+  "chromeWorkflow": "The Chrome extension scans visible page images and supports uploads, then gives you a quick popup for one-off work and a full-page workspace for batches.",
+  "chromePricing": "The Chrome plan includes a three-day trial and up to 5,000 successful generations per month under fair use. Cancel any time.",
+  "agentIntro": "Send one supported typed image data URL with useful page or product context and receive canonical alt text as structured JSON.",
+  "agentInput": "Agent generation currently accepts supported typed image data URLs. Public image URLs and asset IDs remain unavailable for agent requests until that ingestion path is released.",
+  "agentMetering": "Agent access is separately entitled and metered from the Chrome subscription, with idempotent operations, usage summaries, and per-token rate and concurrency controls.",
+  "agentOutput": "The alt_text JSON field is canonical. A receiving agent or CMS must map it into the website alt field; embedded file metadata does not set HTML alt attributes automatically."
+}

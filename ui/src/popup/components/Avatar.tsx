@@ -1,4 +1,5 @@
-import { useMemo, type CSSProperties } from 'react';
+import { type CSSProperties } from 'react';
+import { UserRound } from 'lucide-react';
 
 interface AvatarProps {
   url?: string | null;
@@ -6,35 +7,40 @@ interface AvatarProps {
   tone?: 'free' | 'trial' | 'paid';
 }
 
-function initialsFromName(name?: string): string {
-  if (!name) return '??';
-  const parts = name.split(/[\s._-]+/).filter(Boolean);
-  if (!parts.length) return name.slice(0, 2).toUpperCase();
-  const picked = parts.slice(0, 2).map((part) => part.charAt(0) ?? '');
-  const initials = picked.join('').toUpperCase();
-  return initials || '??';
-}
-
 export function Avatar({ url, name, tone = 'free' }: AvatarProps) {
-  const initials = useMemo(() => initialsFromName(name), [name]);
-
   const palette = tone === 'paid'
-    ? { ring: '#22c55e', surface: '#ecfdf3', text: '#14532d' }
+    ? { dot: '#17a673', surface: '#071d4f', text: '#ffffff' }
     : tone === 'trial'
-      ? { ring: '#f59e0b', surface: '#fff7ed', text: '#7c2d12' }
-      : { ring: '#1e3a8a', surface: '#eff6ff', text: '#1e3a8a' };
+      ? { dot: '#f79009', surface: '#fff7e6', text: '#93370d' }
+      : { dot: '#98a2b3', surface: '#eef4ff', text: '#1849a9' };
 
   const wrapperStyle: CSSProperties = {
     position: 'relative',
-    width: 48,
-    height: 48,
+    width: 38,
+    height: 38,
     borderRadius: 999,
-    padding: 2.5,
+    padding: 2,
     background: '#ffffff',
-    border: `2px solid ${palette.ring}`,
-    boxShadow: '0 2px 8px rgba(2, 8, 23, 0.08)',
+    border: '1px solid #d9dee8',
+    boxShadow: 'none',
     flexShrink: 0,
   };
+
+  const statusDot = (
+    <span
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        right: -1,
+        bottom: 0,
+        width: 10,
+        height: 10,
+        border: '2px solid #ffffff',
+        borderRadius: 999,
+        background: palette.dot,
+      }}
+    />
+  );
 
   if (url) {
     return (
@@ -44,6 +50,7 @@ export function Avatar({ url, name, tone = 'free' }: AvatarProps) {
           alt={name || 'Account avatar'}
           className="h-full w-full rounded-full object-cover"
         />
+        {statusDot}
       </div>
     );
   }
@@ -52,12 +59,13 @@ export function Avatar({ url, name, tone = 'free' }: AvatarProps) {
       <div
         className="h-full w-full rounded-full flex items-center justify-center text-sm font-semibold"
         style={{
-          background: tone === 'trial' ? '#f59e0b' : palette.surface,
-          color: tone === 'trial' ? '#ffffff' : palette.text,
+          background: palette.surface,
+          color: palette.text,
         }}
       >
-        {initials}
+        <UserRound size={18} strokeWidth={1.9} aria-hidden="true" />
       </div>
+      {statusDot}
     </div>
   );
 }

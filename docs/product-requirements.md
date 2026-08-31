@@ -1,101 +1,159 @@
-# Alt Text Generator Pro — Launch Product Requirements
+# Alt Text Generator Pro — Confirmed Product Direction
 
-Status: launch scope approved
-Last updated: 14 August 2026
+Status: approved implementation direction
+
+Last updated: 30 August 2026
 
 ## Product thesis
 
-Alt Text Generator Pro helps ecommerce teams, content publishers, and SEO practitioners turn webpage or uploaded images into concise, editable alt text. The product should use a focus keyword only when the visible image and page context support it. Accuracy takes precedence over keyword inclusion.
+Alt Text Generator Pro has two distinct products sharing one backend:
 
-The launch wedge is Chrome: generate while editing or reviewing a real page. The web app is the companion workflow for uploads, public image URLs, account management, and billing. Shopify and WordPress are explicitly deferred until repeat usage validates the core workflow.
+1. a complete Chrome extension for people;
+2. a separately authenticated, metered MCP/API service for agents.
 
-## Launch surface
+The extension is the only customer-facing generation application. The website explains the products and routes people to Chrome or to the agent connection; it is not a second generator.
 
-- Chrome extension (Manifest V3): right-click generation, page image collection, uploads, batch generation, copy, and metadata download.
-- Web app: uploads, public image URLs, SEO context, editable results, billing, usage, and history.
-- Shared backend: authentication, entitlements, Stripe billing, fair-use counters, generation, and privacy-minimal cost telemetry.
-- Public website: SEO-oriented positioning, exact launch pricing, privacy policy, terms, and support contact.
+## Chrome product
 
-## Core user job
+The Chrome extension popup and full-page workspace own the complete human workflow:
 
-Given an image and optional product/page context, return one natural alt attribute candidate that:
+- sign-in and account management;
+- trial and Chrome subscription initiation;
+- Stripe Checkout and Customer Portal hand-off;
+- subscription management and cancellation;
+- usage allowance and billing-state messaging;
+- page scanning, uploads, and batch generation;
+- page/product context, language, focus-keyword, and brand controls;
+- editable review, copy, and metadata-preserving downloads;
+- local history and settings.
+
+Stripe may open a secure hosted tab, but the action starts inside the extension. There is one human offer: Chrome. Existing web-only and Web + Chrome plan records may remain for backwards compatibility, but must not be purchasable or marketed.
+
+## Website
+
+The public website contains:
+
+- the landing page;
+- Chrome product and pricing information;
+- an Add to Chrome call to action;
+- a dedicated API/MCP product page;
+- privacy, terms, support, and technically necessary authentication or billing callback pages.
+
+There is no customer-facing `/app` generator or web control centre. Legacy `/app` URLs redirect to the public product website.
+
+## Agent MCP/API product
+
+The agent product is commercially and operationally separate from the Chrome subscription:
+
+- its own connection and entitlement;
+- opaque, scoped access tokens stored only as hashes;
+- explicit scopes such as `metadata:generate` and `usage:read`;
+- idempotent request and usage records;
+- per-token rate and concurrency controls;
+- a no-charge usage summary tool;
+- revocation, expiry, last-used, and audit controls.
+
+The legacy shared `BACKEND_API_KEY` is not a public agent credential. Chrome continues to authenticate with its signed-in user token.
+
+Initial MCP tools:
+
+- `generate_image_metadata`;
+- `usage_get_summary`.
+
+`generate_image_metadata_batch` follows after the single-image idempotency and usage ledger is proven. Titles, captions, and long descriptions are outside the initial scope.
+
+## Agent image inputs
+
+The target generation contract accepts:
+
+- a public HTTPS image URL;
+- an uploaded asset ID;
+- a data URL for a small image;
+- optional page or product context;
+- optional language, focus keyword, and brand context.
+
+Large images use a direct upload or short-lived upload URL rather than a large MCP base64 payload. Remote fetches must reject credentials, local names, private/reserved addresses, unsafe redirects, oversized bodies, and mismatched image content.
+
+The current local foundation enables supported typed image data URLs only. Public URL fetching, asset IDs, and direct uploads remain disabled until the bounded fetch and upload paths above are implemented and verified.
+
+## Canonical response
+
+The structured `alt_text` field is the canonical output. Embedded image metadata does not automatically populate a website's HTML `alt` attribute; a receiving agent or CMS must map `alt_text` into its actual alt field.
+
+Target conceptual response when processed-file delivery is enabled:
+
+```json
+{
+  "original_format": "image/jpeg",
+  "output_format": "image/jpeg",
+  "alt_text": "Oak dining chair with a curved wooden backrest.",
+  "metadata_embedded": true,
+  "processed_image_url": "short-lived signed URL"
+}
+```
+
+The current agent response returns `metadata_embedded: false` and `processed_image_url: null`; the structured `alt_text` is available now, while server-side file processing remains deferred.
+
+## Image return contract
+
+The default output format is `original`:
+
+- JPEG stays JPEG and receives XMP `dc:description`;
+- PNG stays PNG and receives Unicode-safe `iTXt` or XMP;
+- WebP stays WebP and receives an XMP chunk.
+
+Metadata-only processing must not silently recompress, resize, or alter pixels. Preserve the filename, dimensions, pixels, and visual quality wherever possible. Unsupported formats are returned unchanged with `metadata_embedded: false` and an explicit reason. Any conversion requires an explicit future output-format option.
+
+## Alt-text quality contract
+
+For an image plus optional context, return one natural candidate that:
 
 1. describes what is visibly present;
 2. stays at or below 125 characters;
-3. avoids “image of”, marketing claims, hashtags, and keyword stuffing;
-4. uses the focus keyword only when visually and contextually justified;
+3. avoids “image of”, promotional claims, hashtags, and keyword stuffing;
+4. uses a keyword or brand only when visibly and contextually justified;
 5. remains editable before copying, downloading, or publishing.
 
-## Launch plans
+Accuracy is more important than keyword inclusion.
 
-| Plan | Price | Access |
-| --- | ---: | --- |
-| Web | $10/month | Web generation |
-| Chrome | $10/month | Chrome generation |
-| Web + Chrome | $19/month | Both launch clients |
+## Usage and billing semantics
 
-- One three-day free trial per eligible account.
-- 60 successful generations/hour, 200/day, and 5,000/month, shared across entitled products.
-- Failed requests do not consume the generation allowance.
-- Stripe Checkout and Customer Portal are the billing surfaces.
+- Count one unit only after a successful image generation.
+- Retries with the same caller and idempotency key return the recorded result and do not charge twice.
+- Uploads, usage summaries, failed generations, rate-limit rejections, and idempotent replays consume zero units.
+- Chrome allowance and agent usage are separate products and entitlements.
+- Live Stripe catalogue or meter changes require a separate, explicit release action.
 
-## Quality and cost requirements
+## Security and privacy
 
-- The server controls the model and image-detail setting; clients cannot select a more expensive model.
-- Launch default: `gpt-4o` with image `detail: low`.
-- Record input/output tokens, estimated model cost, latency, scope, success, and error category.
-- Do not store image data, page context, or generated alt text in generation telemetry.
-- Remote image inputs must reject credentials, local hosts, and private network literals.
-- A generation is counted only after a successful model response.
+- Human generation requires a signed-in account and Chrome entitlement.
+- Agent generation requires a valid, unrevoked, unexpired token with the exact scope.
+- Images and supplied context are processed for the request and are not stored in generation telemetry.
+- Operational telemetry may record model, token counts, estimated cost, latency, scope, outcome, and non-sensitive error category.
+- Payment-card data remains with Stripe.
+- Raw access tokens are shown once and are never stored or logged in plaintext.
 
-## Security and privacy requirements
+## Acceptance criteria
 
-- Generation requires a signed-in account and the matching entitlement.
-- Email self-registration remains disabled until verified-email or password-reset flows exist; Google sign-in and pre-provisioned review accounts are supported.
-- Redirect URIs and CORS origins are allowlisted.
-- Images and context are processed for the request and are not intentionally persisted by the application.
-- Payment-card data is handled by Stripe.
-- Public privacy and terms pages must be live before Chrome Store submission.
-
-## Launch acceptance criteria
-
-- Backend lint, unit tests, TypeScript build, Prisma generation, and production migration pass.
-- Production `/healthz` confirms the process is live; `/readyz` confirms the database is reachable.
-- Web and extension production builds pass with no browser console errors in tested core pages.
-- Chrome package contains only required MV3 source, UI bundles, icons, and locale files.
-- Store screenshot is 1280×800; promotional assets are 440×280 and 1400×560.
-- Chrome listing copy, single-purpose statement, permissions, and data-use disclosures match actual behaviour.
-- Production `/privacy`, `/terms`, auth, subscription status, and generation endpoints are reachable.
-- A time-limited reviewer account can exercise Chrome generation without entering payment details.
-
-## First 30-day learning plan
-
-With no existing usage baseline, success is evidence of repeated completion rather than top-of-funnel volume:
-
-- Activation: installs that sign in and complete a first successful generation.
-- Time to first value: median time from install to first copied result.
-- Repeat use: accounts with successful generations on two or more distinct days within 14 days.
-- Output utility: share of generated results copied or downloaded; regeneration rate as a quality warning signal.
-- Reliability: successful generation rate and p95 latency.
-- Unit economics: estimated OpenAI cost per successful generation and gross model margin by plan.
-- Conversion: trial start, trial completion, paid conversion, and early cancellation.
+- JPEG, PNG, and WebP metadata tests prove format preservation and Unicode-safe descriptions.
+- Unsupported files remain byte-identical and return an explicit embedding reason.
+- Chrome popup and workspace cover account, subscription, allowance, scan/upload, editing, copy, download, history, and settings.
+- The web build has no customer generator route or web-only/Web + Chrome purchase path.
+- Agent token, scope, expiry, revocation, idempotency, rate, concurrency, and usage-summary paths have focused tests.
+- Extension UI build, server lint/tests/TypeScript build, Prisma generation, web build, and package verification pass before release.
+- Local implementation, deployment, Chrome Store submission, Stripe catalogue changes, and ordinary-browser production verification are reported as distinct states.
 
 ## Deferred
 
-- Shopify and WordPress distribution.
+- Safe public-URL fetching, uploaded asset IDs, and direct-upload flows for agents.
+- Server-side metadata embedding, processed-file storage, and short-lived delivery links.
+- Agent batch generation until the single-image ledger is proven.
 - Automatic publishing into third-party CMS fields.
+- Explicit image-format conversion.
+- Titles, captions, and long descriptions.
+- Shopify and WordPress distribution.
 - Team seats and organisation billing.
-- Unverified email registration.
-- Claims of ranking improvement or guaranteed accessibility compliance.
 
-## Decisions
+## Release boundary
 
-| Decision | Launch choice |
-| --- | --- |
-| Primary segment | Ecommerce/content teams doing image SEO in Chrome |
-| Distribution focus | Chrome Web Store first; web app supports activation and billing |
-| Output positioning | SEO-aware and accuracy-first |
-| Model strategy | `gpt-4o`, `detail: low`, server-controlled |
-| Quota | Shared account-level successful-generation limits |
-| Scope | Web + Chrome only |
-| Chrome Store item | Existing listing `gdijbieeagfndfaokkpbcekndoldmilp`; update it rather than creating a duplicate |
+This document authorises local implementation and proportionate verification only. It does not authorise a commit, deployment, website publication, Chrome Store submission, production migration, live Stripe change, or production credential publication.
