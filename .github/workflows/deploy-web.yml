@@ -32,7 +32,7 @@ jobs:
 
       - name: Build web app (staging)
         env:
-          VITE_AGENT_API_ORIGIN: ${{ secrets.VITE_AGENT_API_ORIGIN }}
+          VITE_AGENT_API_ORIGIN: ${{ secrets.VITE_AGENT_API_ORIGIN || 'https://alt-text-gen-pro-backend-4e3b4315d0d7.herokuapp.com' }}
           VITE_APP_ORIGIN: ${{ secrets.VITE_APP_ORIGIN }}
           VITE_CHROME_LINK: ${{ secrets.VITE_CHROME_LINK }}
           VITE_SHOPIFY_LINK: ${{ secrets.VITE_SHOPIFY_LINK }}
@@ -80,7 +80,7 @@ jobs:
 
       - name: Build web app (production)
         env:
-          VITE_AGENT_API_ORIGIN: ${{ secrets.VITE_AGENT_API_ORIGIN }}
+          VITE_AGENT_API_ORIGIN: ${{ secrets.VITE_AGENT_API_ORIGIN || 'https://alt-text-gen-pro-backend-4e3b4315d0d7.herokuapp.com' }}
           VITE_APP_ORIGIN: ${{ secrets.VITE_APP_ORIGIN }}
           VITE_CHROME_LINK: ${{ secrets.VITE_CHROME_LINK }}
           VITE_SHOPIFY_LINK: ${{ secrets.VITE_SHOPIFY_LINK }}
